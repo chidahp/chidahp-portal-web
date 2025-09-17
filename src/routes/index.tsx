@@ -11,7 +11,7 @@ export default function Home() {
           Site Under Maintenance
         </h1>
         <p class="text-gray-600 mb-6 text-sm animate-fade-in-delay-2">
-          เรากำลังปรับปรุงเว็บไซต์ chidahp.com ให้ดียิ่ง
+          รอเว็บใหม่เร็วๆนี้
         </p>
         <a
           href="https://playground.chidahp.com"
