@@ -10,17 +10,18 @@ export default createHandler(() => (
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="robots" content="index, follow" />
+          
           <meta name="author" content="ชี้ดาบ (ธีรนัย โสตถิปิณฑะ)" />
           <meta name="publisher" content="สำนักพิมพ์ชี้ดาบ" />
 
-          <title>ชี้ดาบ | สำนักพิมพ์ที่เขียนชีวิตให้เป็นเรื่อง</title>
+          <title>ชี้ดาบ | สำนักพิมพ์ที่ว่าด้วยการเติบโต</title>
           <meta
             name="description"
             content="ชี้ดาบ สำนักพิมพ์อิสระจากเชียงใหม่ ที่เปลี่ยนเรื่องราวของชีวิต การเดินทาง และวัฒนธรรม ให้กลายเป็นหนังสือที่ช่วยให้คุณค้นพบตัวเอง"
           />
           <meta
             name="keywords"
-            content="สำนักพิมพ์ชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ, พัฒนาตัวเอง, ชีวิตต่างประเทศ, ชี้ดาบ, เจม, Route13, อินเดีย, ญี่ปุ่น, อเมริกา"
+            content="สำนักพิมพ์ชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ, พัฒนาตัวเอง, ชีวิตต่างประเทศ, ชี้ดาบ, เจม, Route13, อินเดีย, ญี่ปุ่น, อเมริกา, southdakota18+"
           />
 
           {/* Open Graph / Facebook */}
