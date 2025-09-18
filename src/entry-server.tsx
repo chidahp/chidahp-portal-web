@@ -10,7 +10,7 @@ export default createHandler(() => (
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="robots" content="index, follow" />
-          
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360416910031647" crossorigin="anonymous"></script>
           <meta name="author" content="ชี้ดาบ (ธีรนัย โสตถิปิณฑะ)" />
           <meta name="publisher" content="สำนักพิมพ์ชี้ดาบ" />
 
