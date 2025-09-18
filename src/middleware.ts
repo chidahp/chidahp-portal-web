@@ -5,6 +5,8 @@ export default createMiddleware({
     (event) => {
       const url = new URL(event.request.url);
       const isMaintenanceMode = process.env.VITE_SITE_MAINTENANCE === "true";
+      const bypassKey = url.searchParams.get("bypass");
+      
       // Skip redirect for internal routes and assets
       if (url.pathname.startsWith("/_") || 
           url.pathname.startsWith("/api/") ||
@@ -13,6 +15,11 @@ export default createMiddleware({
       }
       
       if (isMaintenanceMode) {
+        // Allow bypass with query parameter
+        if (bypassKey === "admin") {
+          return;
+        }
+        
         // Allow access to maintenance page only when maintenance mode is enabled
         if (url.pathname === "/maintenance") {
           return;
@@ -22,7 +29,7 @@ export default createMiddleware({
       } else {
         // When maintenance mode is disabled, redirect maintenance page to home
         if (url.pathname === "/maintenance") {
-          return Response.redirect(new URL("/", event.request.url), 302);
+          return Response.redirect(new URL("/home", event.request.url), 302);
         }
       }
     }

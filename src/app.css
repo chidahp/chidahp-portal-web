@@ -14,8 +14,6 @@
 }
 
 body {
-  background: rgb(var(--background-rgb));
-  color: rgb(var(--foreground-rgb));
   font-family: "IBM Plex Sans Thai", sans-serif;
 }
 
