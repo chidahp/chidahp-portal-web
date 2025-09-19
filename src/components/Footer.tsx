@@ -45,7 +45,7 @@ const socialLinks: SocialLink[] = [
 
 export function Footer() {
   return (
-    <footer class="bg-black text-white py-12">
+    <footer class="bg-black text-white py-12 hidden md:block">
       <div class="flex flex-col items-center justify-center space-y-6">
         {/* Logo */}
         <div class="flex flex-col items-center">
