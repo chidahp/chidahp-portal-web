@@ -4,6 +4,7 @@ import { Footer } from "~/components/Footer";
 import Nav from "~/components/Nav";
 import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
 import SouthDakotaHero from "~/components/utils/SouthDakotaHero";
+import TimelineHero from "~/components/utils/TimelineHero";
 
 export default function HomeLayout(props: RouteSectionProps) {
   const location = useLocation();
@@ -20,7 +21,7 @@ export default function HomeLayout(props: RouteSectionProps) {
     <div class="flex flex-col min-h-screen">
       {/* Top Nav */}
       <Nav />
-
+      {location.pathname === '/timeline' && <TimelineHero />}
       {location.pathname === '/home' && <SouthDakotaHero />}
       {location.pathname === '/podcast' && <ChidahpPodcastHero />}
       {/* Main Content (centered horizontally) */}

@@ -46,7 +46,7 @@ export default function PodcastPage() {
       setTotalPages(res.totalPages);
     } catch (err) {
       console.error("Load failed", err);
-      setError("ไม่สามารถโหลดข้อมูลได้ 🥲");
+      setError("ไม่สามารถโหลดข้อมูลได้ ขออภัยในความไม่สะดวก 🥲");
     } finally {
       setLoading(false);
     }
