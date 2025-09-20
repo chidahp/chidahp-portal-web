@@ -34,14 +34,19 @@ export default function PodcastPage() {
   const [loading, setLoading] = createSignal(false);
 
   // โหลดหน้าแรก
+  const [error, setError] = createSignal<string | null>(null);
+
   const loadPodcasts = async (page = 1) => {
     if (loading()) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetchPodcast(playlistId, page, 10);
-      console.log(res);
       setAllVideos((prev) => [...prev, ...res.data]);
       setTotalPages(res.totalPages);
+    } catch (err) {
+      console.error("Load failed", err);
+      setError("ไม่สามารถโหลดข้อมูลได้ 🥲");
     } finally {
       setLoading(false);
     }
@@ -75,11 +80,32 @@ export default function PodcastPage() {
   return (
     <div class="p-0">
       <div class="p-6 max-w-6xl mx-auto">
+        <Show when={error()}>
+          <div class="w-full max-w-3xl mx-auto mt-6 bg-red-100 text-red-700 p-4 rounded-xl text-center">
+            <p>{error()}</p>
+            <a
+              href="https://www.youtube.com/@Chidahp"
+              target="_blank"
+              class="mt-2 inline-block bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+            >
+              ไปที่ YouTube Channel ตรงๆเลยดีกว่า คลิกเลย 💪
+            </a>
+          </div>
+        </Show>
+
         {/* 🔹 Video Grid */}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <For each={allVideos()}>
-            {(video) => (
-              <div class="bg-white rounded-xl overflow-hidden shadow hover:shadow-2xl transition group">
+            {(video, i) => (
+              <div class="bg-white rounded-xl overflow-hidden shadow hover:shadow-2xl transition group relative">
+                {/* 🔹 Latest Tag */}
+                <Show when={i() === 0}>
+                  <span class="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-md shadow z-10">
+                    🔥 วิดีโอล่าสุด !!
+                  </span>
+                </Show>
+
+
                 <div class="relative aspect-video overflow-hidden">
                   <img
                     src={video.thumbnail}
@@ -115,10 +141,11 @@ export default function PodcastPage() {
               </div>
             )}
           </For>
+
         </div>
 
         {/* 🔹 Loader / End */}
-        <div id="loadMoreRef" class="flex justify-center p-6">
+        <div id="loadMoreRef" class="flex justify-center mt-6 mb-6">
           <Show when={loading()}>
             <div class="flex items-center gap-2 text-gray-500">
               <svg
@@ -146,7 +173,7 @@ export default function PodcastPage() {
           </Show>
 
           <Show when={!loading() && allVideos().length > 0 && currentPage() >= totalPages()}>
-            <div class="w-full max-w-3xl">
+            <div class="w-full">
               <div class="rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white py-12 px-6 flex flex-col items-center justify-center text-center shadow-xl">
                 <h2 class="text-2xl md:text-3xl font-bold mb-3">
                   📌 คุณดูครบแล้ว!
