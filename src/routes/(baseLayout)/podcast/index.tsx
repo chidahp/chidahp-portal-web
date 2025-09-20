@@ -1,13 +1,5 @@
-import {
-  createSignal,
-  createResource,
-  For,
-  onMount,
-  Show,
-  createEffect,
-} from "solid-js";
+import { createSignal, onMount, Show, For } from "solid-js";
 import axios from "axios";
-import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
 
 interface IPodcast {
   id: string;
@@ -29,59 +21,61 @@ async function fetchPodcast(
   page: number,
   limit: number
 ): Promise<IApiResponse> {
-  const url = `https://chidahp-podcast.playground-chidahp.workers.dev/api/videos?playlist=${playlistId}&page=${page}&limit=${limit}`;
+  const url = `https://chidahp-podcast.playground-chidahp.workers.dev/api/videos?playlist=${playlistId}&page=${page}&limit=${limit}&_t=${Date.now()}`;
   const { data } = await axios.get<IApiResponse>(url);
   return data;
 }
 
 export default function PodcastPage() {
   const playlistId = "PLD51zfrpLJx4aoQGo7UniDRn1olnbiK9o";
-  const [currentPage, setCurrentPage] = createSignal(1);
-  const [pageSize] = createSignal(9);
   const [allVideos, setAllVideos] = createSignal<IPodcast[]>([]);
+  const [currentPage, setCurrentPage] = createSignal(1);
+  const [totalPages, setTotalPages] = createSignal(1);
+  const [loading, setLoading] = createSignal(false);
 
-  const [podcasts] = createResource(
-    () => ({ page: currentPage(), limit: pageSize() }),
-    ({ page, limit }) => fetchPodcast(playlistId, page, limit),
-    { initialValue: { page: 1, limit: 9, total: 0, totalPages: 1, data: [] } }
-  );
-
-  // ✅ Append video ใหม่เข้ากับ state
-  createEffect(() => {
-    const data = podcasts();
-    if (data?.data) {
-      setAllVideos((prev) => {
-        const ids = new Set(prev.map((v) => v.id));
-        const newOnes = data.data.filter((v) => !ids.has(v.id));
-        return [...prev, ...newOnes];
-      });
+  // โหลดหน้าแรก
+  const loadPodcasts = async (page = 1) => {
+    if (loading()) return;
+    setLoading(true);
+    try {
+      const res = await fetchPodcast(playlistId, page, 10);
+      console.log(res);
+      setAllVideos((prev) => [...prev, ...res.data]);
+      setTotalPages(res.totalPages);
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  // ✅ IntersectionObserver โหลดเพิ่มเมื่อ scroll ถึงท้าย list
-  let loadMoreRef: HTMLDivElement | undefined;
   onMount(() => {
+    loadPodcasts(1); // โหลดตอนเริ่มต้น
+
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (
           entry.isIntersecting &&
-          !podcasts.loading &&
-          currentPage() < (podcasts()?.totalPages || 1)
+          !loading() &&
+          currentPage() < totalPages()
         ) {
-          setCurrentPage((p) => p + 1);
+          const next = currentPage() + 1;
+          setCurrentPage(next);
+          loadPodcasts(next);
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.5 }
     );
-    if (loadMoreRef) observer.observe(loadMoreRef);
+
+    const el = document.getElementById("loadMoreRef");
+    if (el) observer.observe(el);
+
     return () => observer.disconnect();
   });
 
   return (
     <div class="p-0">
-      {/* 🔹 Video Grid */}
       <div class="p-6 max-w-6xl mx-auto">
+        {/* 🔹 Video Grid */}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <For each={allVideos()}>
             {(video) => (
@@ -105,7 +99,6 @@ export default function PodcastPage() {
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </a>
-                  {/* Overlay Title */}
                   <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white text-sm">
                     {video.title}
                   </div>
@@ -125,8 +118,8 @@ export default function PodcastPage() {
         </div>
 
         {/* 🔹 Loader / End */}
-        <div ref={loadMoreRef} class="flex justify-center p-6">
-          <Show when={podcasts.loading}>
+        <div id="loadMoreRef" class="flex justify-center p-6">
+          <Show when={loading()}>
             <div class="flex items-center gap-2 text-gray-500">
               <svg
                 class="w-5 h-5 animate-spin"
@@ -152,8 +145,7 @@ export default function PodcastPage() {
             </div>
           </Show>
 
-          <Show when={currentPage() >= (podcasts()?.totalPages || 1)}>
-            {/* End Banner */}
+          <Show when={!loading() && allVideos().length > 0 && currentPage() >= totalPages()}>
             <div class="w-full max-w-3xl">
               <div class="rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white py-12 px-6 flex flex-col items-center justify-center text-center shadow-xl">
                 <h2 class="text-2xl md:text-3xl font-bold mb-3">
@@ -180,9 +172,11 @@ export default function PodcastPage() {
               </div>
             </div>
           </Show>
+
         </div>
       </div>
     </div>
   );
 }
+
 
