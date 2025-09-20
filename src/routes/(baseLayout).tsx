@@ -2,6 +2,7 @@ import { RouteSectionProps, useLocation } from "@solidjs/router";
 import { createEffect } from "solid-js";
 import { Footer } from "~/components/Footer";
 import Nav from "~/components/Nav";
+import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
 import SouthDakotaHero from "~/components/utils/SouthDakotaHero";
 
 export default function HomeLayout(props: RouteSectionProps) {
@@ -21,6 +22,7 @@ export default function HomeLayout(props: RouteSectionProps) {
       <Nav />
 
       {location.pathname === '/home' && <SouthDakotaHero />}
+      {location.pathname === '/podcast' && <ChidahpPodcastHero />}
       {/* Main Content (centered horizontally) */}
       <div
         ref={scrollContainer}
