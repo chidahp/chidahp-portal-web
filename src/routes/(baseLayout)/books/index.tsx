@@ -1,4 +1,4 @@
-import { For, createResource, createSignal, createMemo } from "solid-js";
+import { For, createResource, createSignal, createMemo, Show } from "solid-js";
 
 // ✅ ฟังก์ชัน fetch ข้อมูลจาก API
 async function fetchBooks() {
@@ -10,6 +10,10 @@ async function fetchBooks() {
       },
     }
   );
+
+  if (!res.ok) {
+    throw new Error("ไม่สามารถโหลดข้อมูลหนังสือได้");
+  }
 
   return res.json();
 }
@@ -26,7 +30,7 @@ export default function BooksPage() {
   const filteredBooks = createMemo(() => {
     if (!books()) return [];
 
-    return books().filter((book) => {
+    let results = books().filter((book: any) => {
       const matchSearch =
         book.title.toLowerCase().includes(search().toLowerCase()) ||
         book.authors.toLowerCase().includes(search().toLowerCase());
@@ -42,15 +46,19 @@ export default function BooksPage() {
 
       return matchSearch && matchFilter;
     });
+
+    // ✅ จัดเรียง pinned ให้อยู่บนสุด
+    results.sort((a: any, b: any) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0;
+    });
+
+    return results;
   });
 
   return (
     <main class="max-w-6xl mx-auto px-4 py-10">
-      {/* Header */}
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-center mb-10 bg-gradient-to-r from-yellow-500 to-yellow-700 bg-clip-text text-transparent">
-        📚 หนังสือจากสำนักพิมพ์ชี้ดาบ
-      </h1>
-
       {/* Search + Filter */}
       <div class="bg-white/70 backdrop-blur-md p-4 rounded-xl shadow-md mb-10 flex flex-col sm:flex-row sm:justify-between items-center gap-4">
         <input
@@ -71,44 +79,79 @@ export default function BooksPage() {
         </select>
       </div>
 
-      {/* Book Grid */}
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-        <For each={filteredBooks()}>
-          {(book) => (
-            <div class="bg-white rounded-xl shadow-md hover:shadow-2xl transition group overflow-hidden relative">
-              {/* Book Cover */}
-              <div class="aspect-[3/4] relative overflow-hidden">
-                <img
-                  src={book.image}
-                  alt={book.title}
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-              </div>
+      {/* ✅ Loading State */}
+      <Show when={books.loading}>
+        <div class="text-center py-10 text-gray-600 animate-pulse">
+          กำลังโหลดหนังสือ... 📚
+        </div>
+      </Show>
 
-              {/* Book Info */}
-              <div class="p-4">
-                <h2 class="font-semibold text-sm sm:text-base truncate">
-                  {book.title}
-                </h2>
-                <p class="text-gray-500 text-xs sm:text-sm">{book.authors}</p>
-                <a
-                  href={book.buylink || undefined}
-                  target="_blank"
-                  class={`mt-3 inline-block text-center w-full font-bold py-2 rounded-lg shadow transition-transform transform
-                    ${
-                      book.buylink
-                        ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black hover:-translate-y-0.5"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-                >
-                  ดูรายละเอียด
-                </a>
+      {/* ✅ Error State */}
+      <Show when={books.error}>
+        <div class="text-center py-10 text-red-600 font-semibold">
+          ❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: {String(books.error)}
+        </div>
+      </Show>
+
+      {/* Book Grid */}
+      <Show when={books() && !books.error}>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          <For each={filteredBooks()}>
+            {(book) => (
+              <div class="bg-white rounded-xl shadow-md hover:shadow-2xl transition group overflow-hidden relative">
+                {/* Book Cover */}
+                <div class="aspect-[3/4] relative overflow-hidden">
+                  <img
+                    src={book.image}
+                    alt={book.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+
+                  {/* ✅ Badges */}
+                  <div class="absolute top-2 left-2 flex flex-col gap-1">
+                    {book.pinned && (
+                      <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded shadow">
+                        📌 หนังสือแนะนำ
+                      </span>
+                    )}
+                    {book.isNewRelease && (
+                      <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow">
+                        🆕 ใหม่ล่าสุด
+                      </span>
+                    )}
+                    {book.isBestSeller && (
+                      <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow">
+                        🔥 ขายดี
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Book Info */}
+                <div class="p-4">
+                  <h2 class="font-semibold text-sm sm:text-base truncate">
+                    {book.title}
+                  </h2>
+                  <p class="text-gray-500 text-xs sm:text-sm">{book.authors}</p>
+                  <a
+                    href={book.buylink || undefined}
+                    target="_blank"
+                    class={`mt-3 inline-block text-center w-full font-bold py-2 rounded-lg shadow transition-transform transform
+                      ${
+                        book.buylink
+                          ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black hover:-translate-y-0.5"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                  >
+                    {book.buylink ? "ดูรายละเอียด" : "เร็วๆนี้"}
+                  </a>
+                </div>
               </div>
-            </div>
-          )}
-        </For>
-      </div>
+            )}
+          </For>
+        </div>
+      </Show>
     </main>
   );
 }

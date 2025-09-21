@@ -7,7 +7,7 @@ export default function TimelineHero() {
       {/* Content */}
       <div class="relative z-10 px-6 max-w-3xl">
         <h1 class="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
-          ชี้ดาบ | TIMELINE
+          ชี้ดาบ | Journey
         </h1>
         <p class="mt-3 text-base md:text-lg text-yellow-100 font-light">
           เรื่องราวการเดินทางกว่า 10 ปี — จากนักเรียนแลกเปลี่ยน สู่สำนักพิมพ์อิสระ
