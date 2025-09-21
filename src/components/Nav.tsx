@@ -1,5 +1,15 @@
 import { useLocation } from "@solidjs/router";
-import { FlagTriangleRight, House, LibraryBig, Podcast, Store } from "lucide-solid";
+import { FlagTriangleRight, House, LibraryBig, Podcast, Store, Gamepad2 } from "lucide-solid";
+
+const menuItems = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/books", label: "Books", icon: LibraryBig },
+  { href: "/timeline", label: "Timeline", icon: FlagTriangleRight },
+  { href: "/podcast", label: "Podcast", icon: Podcast },
+  { href: "https://playground.chidahp.com", external: "https://playground.chidahp.com", label: "Playground", icon: Gamepad2 },
+  // ✅ Shop ใช้ external link ได้เหมือนกัน
+  { href: "/shop", external: "https://chidahp.page365.net/", label: "Shop", icon: Store },
+];
 
 export default function Nav() {
   const location = useLocation();
@@ -33,66 +43,22 @@ export default function Nav() {
 
             {/* Desktop Menu */}
             <ul class="flex items-center space-x-8">
-              <li>
-                <a
-                  href="/home"
-                  class={`font-medium text-lg transition-colors duration-200 ${
-                    location.pathname === "/home"
-                      ? "text-amber-900"
-                      : "text-amber-800 hover:text-amber-900"
-                  }`}
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/books"
-                  class={`font-medium text-lg transition-colors duration-200 ${
-                    location.pathname === "/books"
-                      ? "text-amber-900"
-                      : "text-amber-800 hover:text-amber-900"
-                  }`}
-                >
-                  Books
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/timeline"
-                  class={`font-medium text-lg transition-colors duration-200 ${
-                    location.pathname === "/timeline"
-                      ? "text-amber-900"
-                      : "text-amber-800 hover:text-amber-900"
-                  }`}
-                >
-                  Timeline
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/podcast"
-                  class={`font-medium text-lg transition-colors duration-200 ${
-                    location.pathname === "/podcast"
-                      ? "text-amber-900"
-                      : "text-amber-800 hover:text-amber-900"
-                  }`}
-                >
-                  Podcast
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/shop"
-                  class={`font-medium text-lg transition-colors duration-200 ${
-                    location.pathname === "/shop"
-                      ? "text-amber-900"
-                      : "text-amber-800 hover:text-amber-900"
-                  }`}
-                >
-                  Shop
-                </a>
-              </li>
+              {menuItems.map(({ href, external, label }) => (
+                <li>
+                  <a
+                    href={external ?? href}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                    class={`font-medium text-lg transition-colors duration-200 ${
+                      location.pathname === href
+                        ? "text-amber-900"
+                        : "text-amber-800 hover:text-amber-900"
+                    }`}
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -115,65 +81,21 @@ export default function Nav() {
       {/* 🔹 Mobile Bottom Navigation */}
       <nav class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg lg:hidden z-50">
         <div class="flex justify-around items-center h-14">
-          <a
-            href="/home"
-            class={`flex flex-col items-center ${
-              location.pathname === "/home"
-                ? "text-amber-900 font-bold"
-                : "text-gray-600"
-            }`}
-          >
-            <House class="w-5 h-5" />
-            <span class="text-xs">Home</span>
-          </a>
-
-          <a
-            href="/books"
-            class={`flex flex-col items-center ${
-              location.pathname === "/books"
-                ? "text-amber-900 font-bold"
-                : "text-gray-600"
-            }`}
-          >
-            <LibraryBig class="w-5 h-5" />
-            <span class="text-xs">Books</span>
-          </a>
-
-          <a
-            href="/timeline"
-            class={`flex flex-col items-center ${
-              location.pathname === "/timeline"
-                ? "text-amber-900 font-bold"
-                : "text-gray-600"
-            }`}
-          >
-            <FlagTriangleRight class="w-5 h-5" />
-            <span class="text-xs">Timeline</span>
-          </a>
-
-          <a
-            href="/podcast"
-            class={`flex flex-col items-center ${
-              location.pathname === "/podcast"
-                ? "text-amber-900 font-bold"
-                : "text-gray-600"
-            }`}
-          >
-            <Podcast class="w-5 h-5" />
-            <span class="text-xs">Podcast</span>
-          </a>
-
-          <a
-            href="https://chidahp.page365.net/"
-            class={`flex flex-col items-center ${
-              location.pathname === "/shop"
-                ? "text-amber-900 font-bold"
-                : "text-gray-600"
-            }`}
-          >
-            <Store class="w-5 h-5" />
-            <span class="text-xs">Shop</span>
-          </a>
+          {menuItems.map(({ href, external, label, icon: Icon }) => (
+            <a
+              href={external ?? href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              class={`flex flex-col items-center ${
+                location.pathname === href
+                  ? "text-amber-900 font-bold"
+                  : "text-gray-600"
+              }`}
+            >
+              <Icon class="w-5 h-5" />
+              <span class="text-xs">{label}</span>
+            </a>
+          ))}
         </div>
       </nav>
     </>
