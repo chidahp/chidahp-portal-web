@@ -1,4 +1,6 @@
 import { For } from "solid-js";
+import Seo from "../../../components/SEO";
+import { breadcrumbSchema } from "../../../utils/structuredData";
 
 const timeline = [
   {
@@ -154,8 +156,27 @@ const timeline = [
 ];
 
 export default function TimelinePage() {
+  // Create structured data for this page
+  const structuredData = () => {
+    const breadcrumbs = breadcrumbSchema([
+      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "เส้นทางชี้ดาบ", url: "https://www.chidahp.com/timeline" }
+    ]);
+    
+    return [breadcrumbs];
+  };
+
   return (
-    <main class="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <Seo 
+        title="เส้นทางชี้ดาบ | Timeline การเติบโตของสำนักพิมพ์"
+        description="ติดตามเส้นทางการเติบโตของชี้ดาบ ตั้งแต่ปี 2007 จนถึงปัจจุบัน เรื่องราวการเดินทาง การเรียนรู้ และการเติบโต"
+        keywords="เส้นทางชี้ดาบ, timeline, ประวัติชี้ดาบ, การเติบโต, สำนักพิมพ์, เจม, การเดินทาง"
+        url="https://www.chidahp.com/timeline"
+        type="website"
+        structuredData={structuredData()}
+      />
+      <main class="max-w-4xl mx-auto px-4 py-12">
       <ul class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
         <For each={timeline}>
           {(item) => (
@@ -197,5 +218,6 @@ export default function TimelinePage() {
         — ชี้ดาบยังคงเดินทางต่อไป —
       </div>
     </main>
+    </>
   );
 }

@@ -7,6 +7,15 @@ import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
 import SouthDakotaHero from "~/components/utils/SouthDakotaHero";
 import TimelineHero from "~/components/utils/TimelineHero";
 
+// Google Analytics tracking function
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
+
+const GA_TRACKING_ID = "G-K5QP91K4LT";
+
 export default function HomeLayout(props: RouteSectionProps) {
   const location = useLocation();
   let scrollContainer: HTMLDivElement | undefined;
@@ -15,6 +24,15 @@ export default function HomeLayout(props: RouteSectionProps) {
     location.pathname; // track pathname changes
     if (scrollContainer) {
       scrollContainer.scrollTop = 0;
+    }
+    
+    // Track page views with Google Analytics
+    if (globalThis.window !== undefined && globalThis.gtag) {
+      globalThis.gtag('config', GA_TRACKING_ID, {
+        page_title: document.title,
+        page_location: globalThis.location.href,
+        page_path: location.pathname
+      });
     }
   });
 

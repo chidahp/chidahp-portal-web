@@ -1,4 +1,6 @@
 import { For, createResource, createSignal, createMemo, Show } from "solid-js";
+import Seo from "../../../components/SEO";
+import { breadcrumbSchema, collectionPageSchema } from "../../../utils/structuredData";
 
 // ✅ ฟังก์ชัน fetch ข้อมูลจาก API
 async function fetchBooks() {
@@ -57,8 +59,32 @@ export default function BooksPage() {
     return results;
   });
 
+  // Create structured data for this page
+  const structuredData = () => {
+    const breadcrumbs = breadcrumbSchema([
+      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "หนังสือ", url: "https://www.chidahp.com/books" }
+    ]);
+    
+    const collectionData = books() ? collectionPageSchema("หนังสือ", books().map(book => ({
+      title: book.title,
+      url: book.buylink || `https://www.chidahp.com/books/${book.slug || book.id}`
+    }))) : null;
+    
+    return [breadcrumbs, collectionData].filter(Boolean);
+  };
+
   return (
-    <main class="max-w-6xl mx-auto px-4 py-10">
+    <>
+      <Seo 
+        title="หนังสือทั้งหมด | ชี้ดาบ - สำนักพิมพ์ที่ว่าด้วยการเติบโต"
+        description="ค้นหาหนังสือทั้งหมดจากชี้ดาบ หนังสือเดินทาง แรงบันดาลใจ และการพัฒนาตัวเอง ที่จะเปลี่ยนชีวิตคุณ"
+        keywords="หนังสือชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ, พัฒนาตัวเอง, Route13, อินเดีย, ญี่ปุ่น, อเมริกา, เจม"
+        url="https://www.chidahp.com/books"
+        type="website"
+        structuredData={structuredData()}
+      />
+      <main class="max-w-6xl mx-auto px-4 py-10">
       {/* Search + Filter */}
       <div class="bg-white/70 backdrop-blur-md p-4 rounded-xl shadow-md mb-10 flex flex-col sm:flex-row sm:justify-between items-center gap-4">
         <input
@@ -153,5 +179,6 @@ export default function BooksPage() {
         </div>
       </Show>
     </main>
+    </>
   );
 }

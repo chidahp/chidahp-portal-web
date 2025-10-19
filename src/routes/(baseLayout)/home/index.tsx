@@ -3,6 +3,8 @@ import { createSignal, createEffect, For, Show } from 'solid-js';
 import { action, useAction } from '@solidjs/router';
 import BlogCard from '../../../components/BlogCard';
 import SkeletonLoader from '../../../components/SkeletonLoader';
+import Seo from '../../../components/SEO';
+import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
 
 interface Author {
   name: string;
@@ -134,14 +136,38 @@ export default function Home() {
     setIsLoading(false);
   };
 
+  // Create structured data for this page
+  const structuredData = () => {
+    const breadcrumbs = breadcrumbSchema([
+      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "บล็อกและบทความ", url: "https://www.chidahp.com/home" }
+    ]);
+    
+    const collectionData = posts().length > 0 ? collectionPageSchema("บทความ", posts().map(post => ({
+      title: post.title,
+      url: `https://playground.chidahp.com/${post.slug}`
+    }))) : null;
+    
+    return [breadcrumbs, collectionData].filter(Boolean);
+  };
+
   return (
-    <main class="container mx-auto px-4 py-8">
-      <div class="max-w-6xl mx-auto">
-        {/* Header Section */}
-        <div class="text-center mb-12">
-          <h1 class="text-2xl sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-12 px-4">
-            บล็อกและบทความ X รีวิวหนังสือจากชาวชูโล่
-          </h1>
+    <>
+      <Seo 
+        title="บล็อกและบทความ | ชี้ดาบ - รีวิวหนังสือและแรงบันดาลใจ"
+        description="อ่านบทความและรีวิวหนังสือจากชาวชูโล่ เรื่องราวการเดินทาง แรงบันดาลใจ และการเติบโตในชีวิต"
+        keywords="รีวิวหนังสือ, บทความ, แรงบันดาลใจ, การเดินทาง, ชี้ดาบ, ชาวชูโล่, พัฒนาตัวเอง"
+        url="https://www.chidahp.com/home"
+        type="website"
+        structuredData={structuredData()}
+      />
+      <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div class="text-center mb-12">
+            <h1 class="text-2xl sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-12 px-4">
+              บล็อกและบทความ X รีวิวหนังสือจากชาวชูโล่
+            </h1>
 
           {/* Blog Posts Grid */}
           <Show when={!isInitialLoading()} fallback={<SkeletonLoader />}>
@@ -208,5 +234,6 @@ export default function Home() {
         </div>
       </div>
     </main>
+    </>
   );
 }

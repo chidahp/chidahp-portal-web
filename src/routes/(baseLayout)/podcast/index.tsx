@@ -1,5 +1,7 @@
 import { createSignal, onMount, Show, For } from "solid-js";
 import axios from "axios";
+import Seo from "../../../components/SEO";
+import { breadcrumbSchema, collectionPageSchema } from "../../../utils/structuredData";
 
 interface IPodcast {
   id: string;
@@ -77,8 +79,32 @@ export default function PodcastPage() {
     return () => observer.disconnect();
   });
 
+  // Create structured data for this page
+  const structuredData = () => {
+    const breadcrumbs = breadcrumbSchema([
+      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "พอดแคสต์", url: "https://www.chidahp.com/podcast" }
+    ]);
+    
+    const collectionData = allVideos().length > 0 ? collectionPageSchema("วิดีโอ", allVideos().map(video => ({
+      title: video.title,
+      url: `https://www.youtube.com/watch?v=${video.id}`
+    }))) : null;
+    
+    return [breadcrumbs, collectionData].filter(Boolean);
+  };
+
   return (
-    <div class="p-0">
+    <>
+      <Seo 
+        title="พอดแคสต์ชี้ดาบ | วิดีโอแรงบันดาลใจและการเติบโต"
+        description="ดูพอดแคสต์และวิดีโอจากชี้ดาบ เรื่องราวการเดินทาง แรงบันดาลใจ และการเติบโตในชีวิต ที่จะเปลี่ยนมุมมองของคุณ"
+        keywords="พอดแคสต์ชี้ดาบ, วิดีโอแรงบันดาลใจ, YouTube, การเดินทาง, การเติบโต, ชี้ดาบ, เจม"
+        url="https://www.chidahp.com/podcast"
+        type="website"
+        structuredData={structuredData()}
+      />
+      <div class="p-0">
       <div class="p-6 max-w-6xl mx-auto">
         <Show when={error()}>
           <div class="w-full max-w-3xl mx-auto mt-6 bg-red-100 text-red-700 p-4 rounded-xl text-center">
@@ -203,6 +229,7 @@ export default function PodcastPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

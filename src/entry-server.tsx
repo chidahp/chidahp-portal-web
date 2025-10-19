@@ -1,6 +1,9 @@
 // index.tsx หรือ root entry point สำหรับ SolidStart app
 
 import { createHandler, StartServer } from "@solidjs/start/server";
+import GoogleAnalytics from "~/components/GoogleAnalytics";
+import Seo from "~/components/SEO";
+import { organizationSchema, websiteSchema } from "~/utils/structuredData";
 
 export default createHandler(() => (
   <StartServer
@@ -9,46 +12,35 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="robots" content="index, follow" />
+          
+          {/* Performance & Security Headers */}
+          <meta name="referrer" content="strict-origin-when-cross-origin" />
+          
+          {/* Preconnect to external domains for performance */}
+          <link rel="preconnect" href="https://www.googletagmanager.com" />
+          <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+          <link rel="preconnect" href="https://www.youtube.com" />
+          <link rel="dns-prefetch" href="https://playground.chidahp.com" />
+          <link rel="dns-prefetch" href="https://chidahp-book.playground-chidahp.workers.dev" />
+          <link rel="dns-prefetch" href="https://chidahp-podcast.playground-chidahp.workers.dev" />
+          
+          {/* Google AdSense */}
           <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360416910031647" crossorigin="anonymous"></script>
-          <meta name="author" content="ชี้ดาบ (ธีรนัย โสตถิปิณฑะ)" />
-          <meta name="publisher" content="สำนักพิมพ์ชี้ดาบ" />
-
-          <title>ชี้ดาบ | สำนักพิมพ์ที่ว่าด้วยการเติบโต</title>
-          <meta
-            name="description"
-            content="ชี้ดาบ สำนักพิมพ์ที่ว่าด้วยการเติบโต ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ เปลี่ยนความเศร้า ความล้มเหลว และการเดินทาง ให้กลายเป็นความเข้าใจชีวิต"
+          
+          {/* SEO Component */}
+          <Seo 
+            structuredData={[organizationSchema, websiteSchema]}
           />
-          <meta
-            name="keywords"
-            content="สำนักพิมพ์ชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ, พัฒนาตัวเอง, ชีวิตต่างประเทศ, ชี้ดาบ, เจม, Route13, อินเดีย, ญี่ปุ่น, อเมริกา, southdakota18+"
-          />
-
-          {/* Open Graph / Facebook */}
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://www.chidahp.com/" />
-          <meta property="og:title" content="ชี้ดาบ | สำนักพิมพ์ที่ว่าด้วยการเติบโต" />
-          <meta
-            property="og:description"
-            content="สำนักพิมพ์ที่ว่าด้วยการเติบโต ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ เปลี่ยนความเศร้า ความล้มเหลว และการเดินทาง ให้กลายเป็นความเข้าใจชีวิต"
-          />
-          <meta property="og:image" content="/chidahp.webp" />
-
-          {/* Twitter */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:url" content="https://www.chidahp.com/" />
-          <meta name="twitter:title" content="ชี้ดาบ | สำนักพิมพ์ที่ว่าด้วยการเติบโต" />
-          <meta
-            name="twitter:description"
-            content="สำนักพิมพ์ที่ว่าด้วยการเติบโต ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ เปลี่ยนความเศร้า ความล้มเหลว และการเดินทาง ให้กลายเป็นความเข้าใจชีวิต"
-          />
-          <meta name="twitter:image" content="/chidahp.webp" />
-
+          
+          {/* Favicon and Icons */}
           <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/chidahp.webp" />
+          
           {assets}
         </head>
         <body data-theme="light">
           <div id="app">{children}</div>
+          <GoogleAnalytics />
           {scripts}
         </body>
       </html>
