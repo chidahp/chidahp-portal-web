@@ -1,7 +1,6 @@
 // index.tsx หรือ root entry point สำหรับ SolidStart app
 
 import { createHandler, StartServer } from "@solidjs/start/server";
-import GoogleAnalytics from "~/components/GoogleAnalytics";
 import Seo from "~/components/SEO";
 import { organizationSchema, websiteSchema } from "~/utils/structuredData";
 
@@ -32,6 +31,15 @@ export default createHandler(() => (
             structuredData={[organizationSchema, websiteSchema]}
           />
           
+          {/* Google Analytics */}
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-K5QP91K4LT"></script>
+          <script>
+            {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-K5QP91K4LT');`}
+          </script>
+          
           {/* Favicon and Icons */}
           <link rel="icon" href="/favicon.ico" />
           <link rel="apple-touch-icon" href="/chidahp.webp" />
@@ -40,7 +48,6 @@ export default createHandler(() => (
         </head>
         <body data-theme="light">
           <div id="app">{children}</div>
-          <GoogleAnalytics />
           {scripts}
         </body>
       </html>
