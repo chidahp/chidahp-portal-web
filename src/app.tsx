@@ -8,11 +8,6 @@ export default function App() {
     <Router
       root={props => (
         <>
-          {`
-            <head>
-              <script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
-            </head>
-          `}
           <Suspense>{props.children}</Suspense>
         </>
       )}

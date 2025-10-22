@@ -161,18 +161,6 @@ export default function Home() {
         type="website"
         structuredData={structuredData()}
       />
-      {/* AMP Ad Section */}
-      <div class="mb-8">
-        {`
-        <amp-ad width="100vw" height="320"
-              type="adsense"
-              data-ad-client="ca-pub-8360416910031647"
-              data-ad-slot="6891985672"
-              data-auto-format="mcrspv"
-              data-full-width="">
-          <div overflow=""></div>
-        </amp-ad>`}
-      </div>
       <main class="container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
           {/* Header Section */}
