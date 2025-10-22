@@ -1,47 +1,57 @@
-import { createHandler } from "@solidjs/start/server";
+// File: src/routes/sitemap.xml.ts
+import { APIEvent } from "@solidjs/start/server";
 
-export const GET = createHandler(async () => {
+export async function GET({ request }: APIEvent) {
   const baseUrl = "https://www.chidahp.com";
   const currentDate = new Date().toISOString();
 
+  const pages = [
+    {
+      url: `${baseUrl}/`,
+      priority: "1.0",
+      changefreq: "weekly",
+    },
+    {
+      url: `${baseUrl}/home`,
+      priority: "0.9",
+      changefreq: "daily",
+    },
+    {
+      url: `${baseUrl}/books`,
+      priority: "0.9",
+      changefreq: "weekly",
+    },
+    {
+      url: `${baseUrl}/podcast`,
+      priority: "0.8",
+      changefreq: "daily",
+    },
+    {
+      url: `${baseUrl}/timeline`,
+      priority: "0.7",
+      changefreq: "monthly",
+    },
+  ];
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}</loc>
+${pages
+  .map(
+    (page) => `  <url>
+    <loc>${page.url}</loc>
     <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/home</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/books</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/podcast</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/timeline</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`
+  )
+  .join("\n")}
 </urlset>`;
 
   return new Response(sitemap, {
     headers: {
-      "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=86400", // Cache for 24 hours
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
+      "X-Robots-Tag": "index, follow",
     },
   });
-});
+}
