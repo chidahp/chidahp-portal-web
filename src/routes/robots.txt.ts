@@ -1,6 +1,7 @@
-import { createHandler } from "@solidjs/start/server";
+// File: src/routes/robots.txt.ts
+import type { APIEvent } from "@solidjs/start/server";
 
-export const GET = createHandler(async () => {
+export async function GET(_event: APIEvent) {
   const robotsTxt = `User-agent: *
 Allow: /
 
@@ -26,8 +27,8 @@ Allow: /`;
 
   return new Response(robotsTxt, {
     headers: {
-      "Content-Type": "text/plain",
-      "Cache-Control": "public, max-age=86400", // Cache for 24 hours
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=86400", // 24 hours cache
     },
   });
-});
+}
