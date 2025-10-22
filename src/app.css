@@ -91,3 +91,47 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Cookie Consent Popup Animations */
+@keyframes slideUpFromBottom {
+  from { 
+    transform: translateY(100%) scale(0.9); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0) scale(1); 
+    opacity: 1; 
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideDownToBottom {
+  from { 
+    transform: translateY(0) scale(1); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translateY(100%) scale(0.9); 
+    opacity: 0; 
+  }
+}
+
+.cookie-popup-enter {
+  animation: slideUpFromBottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.cookie-popup-enter:first-child {
+  animation: fadeInBackdrop 0.3s ease-out forwards;
+}
+
+.cookie-popup-exit {
+  animation: slideDownToBottom 0.3s ease-in forwards;
+}

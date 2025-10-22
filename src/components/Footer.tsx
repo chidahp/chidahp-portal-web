@@ -80,6 +80,16 @@ export function Footer() {
             </a>
           ))}
         </div>
+
+        {/* Privacy Policy Link */}
+        <div class="pt-4 border-t border-gray-700">
+          <a 
+            href="/privacy-policy" 
+            class="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            นโยบายความเป็นส่วนตัว
+          </a>
+        </div>
       </div>
     </footer>
   );
