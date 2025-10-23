@@ -31,6 +31,11 @@ export async function GET({ request }: APIEvent) {
       priority: "0.7",
       changefreq: "monthly",
     },
+    {
+      url: `https://playground.chidahp.com/sitemap.xml`,
+      priority: "0.6",
+      changefreq: "weekly",
+    }
   ];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -45,12 +50,7 @@ ${pages
   </url>`
   )
   .join("\n")}
-  <url>
-    <loc>https://playground.chidahp.com/sitemap.xml</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+  
 </urlset>`;
 
   return new Response(sitemap, {
