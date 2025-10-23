@@ -45,6 +45,12 @@ ${pages
   </url>`
   )
   .join("\n")}
+  <url>
+    <loc>https://playground.chidahp.com/sitemap.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>`;
 
   return new Response(sitemap, {
