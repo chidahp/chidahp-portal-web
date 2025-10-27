@@ -17,7 +17,7 @@ export default function Nav() {
   return (
     <>
       {/* 🔹 Desktop Top Navbar */}
-      <nav class="hidden lg:block bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-2xl border-b-4 border-transparent relative">
+      <nav class="hidden lg:block bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-2xl border-b-4 border-transparent relative grayscale">
         <div class="absolute inset-0 bg-gradient-to-r from-yellow-200/20 via-transparent to-yellow-200/20"></div>
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div class="flex items-center justify-between h-20">
