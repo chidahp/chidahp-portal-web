@@ -5,6 +5,7 @@ import Nav from "~/components/Nav";
 import BookHero from "~/components/utils/BookHero";
 import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
 import SouthDakotaHero from "~/components/utils/SouthDakotaHero";
+import ThaiBookFairChidahp from "~/components/utils/ThaiBookFairChidahp";
 import TimelineHero from "~/components/utils/TimelineHero";
 
 // Google Analytics tracking function
@@ -41,7 +42,8 @@ export default function HomeLayout(props: RouteSectionProps) {
       {/* Top Nav */}
       <Nav />
       {location.pathname === '/timeline' && <TimelineHero />}
-      {location.pathname === '/home' && <SouthDakotaHero />}
+      {location.pathname === '/home' && <ThaiBookFairChidahp />}
+      {/* {location.pathname === '/home' && <SouthDakotaHero />}   */}
       {location.pathname === '/podcast' && <ChidahpPodcastHero />}
       {location.pathname === '/books' && <BookHero />}
       {/* Main Content (centered horizontally) */}
