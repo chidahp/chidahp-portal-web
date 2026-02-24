@@ -14,7 +14,7 @@ export default function SouthDakotaHero() {
   });
 
   return (
-    <section class="relative flex flex-col items-center justify-center min-h-[60vh] overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800 text-center px-2 pt-20">
+    <section class="relative flex flex-col items-center justify-center min-h-[55vh] sm:min-h-[60vh] overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800 text-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 sm:pb-12">
       {/* Parallax Background */}
       <div
         class="absolute inset-0 bg-cover bg-center transition-transform duration-700"
@@ -28,9 +28,9 @@ export default function SouthDakotaHero() {
       {/* Animated Gradient Overlay */}
       <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-purple-900/60 to-transparent" />
 
-      {/* Neon Floating Glow */}
-      <div class="absolute -top-40 -left-32 h-96 w-96 rounded-full bg-pink-600/20 blur-3xl animate-pulse" />
-      <div class="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-purple-500/10 blur-2xl animate-pulse" />
+      {/* Neon Floating Glow - scaled for mobile */}
+      <div class="absolute -top-24 -left-16 sm:-top-40 sm:-left-32 h-48 w-48 sm:h-96 sm:w-96 rounded-full bg-pink-600/20 blur-2xl sm:blur-3xl animate-pulse" />
+      <div class="absolute bottom-0 right-0 h-40 w-40 sm:h-80 sm:w-80 rounded-full bg-purple-500/10 blur-xl sm:blur-2xl animate-pulse" />
 
       <img
         src="/southdakota.png"
@@ -40,19 +40,18 @@ export default function SouthDakotaHero() {
         style={{
           transform: `translateY(${offsetY() * 0.15}px)`,
         }}
-        class="relative z-10 drop-shadow-[0_0_40px_rgba(236,72,153,0.5)] transition-transform duration-1000 hover:scale-105 animate-zoom-fade"
+        class="relative z-10 w-[200px] sm:w-[250px] md:w-[300px] h-auto drop-shadow-[0_0_40px_rgba(236,72,153,0.5)] transition-transform duration-1000 hover:scale-105 animate-zoom-fade"
       />
 
       {/* Main Content */}
-      <div class="relative z-10 max-w-4xl mx-auto text-center">
+      <div class="relative z-10 max-w-4xl mx-auto text-center w-full">
         {/* Subtitle with Typewriter Effect */}
         <div
           style={{
             transform: `translateY(${offsetY() * 0.25}px)`,
           }}
-          class="mb-8 text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-fade-in delay-700"
+          class="mb-6 sm:mb-8 px-2 text-sm sm:text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-fade-in delay-700"
         >
-
           <SolidTyper
             text={[
               "เมื่ออิสรภาพและความฝัน แลกมาด้วยความพัง และความจริง...",
@@ -69,9 +68,9 @@ export default function SouthDakotaHero() {
           }}
           class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-1000"
         >
-          <A href="https://playground.chidahp.com/southdakota">
-            <button class="group relative bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/50 hover:border-pink-300 hover:from-purple-600/30 hover:to-pink-600/30 transform hover:scale-105 transition-all duration-300 text-white px-8 py-4 rounded-full font-semibold flex items-center text-center space-x-3 backdrop-blur-sm cursor-pointer mb-6 animate-pulse hover:animate-none shadow-lg hover:shadow-pink-500/25">
-              <span class="ml-3 text-xs md:text-sm group-hover:scale-110 transition-transform duration-200">
+          <A href="https://playground.chidahp.com/southdakota" class="w-full sm:w-auto max-w-[320px] sm:max-w-none">
+            <button class="group relative w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/50 hover:border-pink-300 hover:from-purple-600/30 hover:to-pink-600/30 transform hover:scale-105 transition-all duration-300 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold flex items-center justify-center space-x-3 backdrop-blur-sm cursor-pointer animate-pulse hover:animate-none shadow-lg hover:shadow-pink-500/25">
+              <span class="text-xs sm:text-sm group-hover:scale-110 transition-transform duration-200">
                 🌟 เริ่มต้นการผจญภัย 🌟
               </span>
               <div class="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
@@ -80,8 +79,8 @@ export default function SouthDakotaHero() {
         </div>
       </div>
 
-      {/* Floating Center Glow */}
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-pink-500/10 blur-[140px] animate-pulse"></div>
+      {/* Floating Center Glow - scaled for mobile */}
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] sm:h-[450px] sm:w-[450px] lg:h-[600px] lg:w-[600px] rounded-full bg-pink-500/10 blur-[80px] sm:blur-[120px] lg:blur-[140px] animate-pulse"></div>
     </section>
   );
 }
