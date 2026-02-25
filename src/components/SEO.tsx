@@ -22,11 +22,14 @@ export default function SEO(props: SEOProps) {
     const defaultAuthor = "ชี้ดาบ (ธีรนัย โสตถิปิณฑะ)";
     const defaultPublisher = "สำนักพิมพ์ชี้ดาบ";
 
+    const rawImage = props.image || defaultImage;
+    const imageAbsolute = rawImage.startsWith("http") ? rawImage : `${baseUrl}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`;
+
     return {
       title: props.title || "ชี้ดาบ | สำนักพิมพ์ที่ว่าด้วยการเติบโต",
       description: props.description || "ชี้ดาบ สำนักพิมพ์ที่ว่าด้วยการเติบโต ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ เปลี่ยนความเศร้า ความล้มเหลว และการเดินทาง ให้กลายเป็นความเข้าใจชีวิต",
       keywords: props.keywords || "สำนักพิมพ์ชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ, พัฒนาตัวเอง, ชีวิตต่างประเทศ, ชี้ดาบ, เจม, Route13, อินเดีย, ญี่ปุ่น, อเมริกา, southdakota18+",
-      image: props.image || defaultImage,
+      image: imageAbsolute,
       url: props.url || baseUrl,
       type: props.type || "website",
       author: props.author || defaultAuthor,
@@ -73,6 +76,8 @@ export default function SEO(props: SEOProps) {
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
       <meta name="bingbot" content="index, follow" />
+      {/* Short summary for AI crawlers / citations */}
+      <meta name="abstract" content={seoData().description} />
       
       {/* Article specific meta tags */}
       {seoData().type === "article" && (
@@ -94,12 +99,17 @@ export default function SEO(props: SEOProps) {
         </>
       )}
       
-      {/* Structured Data (JSON-LD) */}
-      {seoData().structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(seoData().structuredData)}
-        </script>
-      )}
+      {/* Structured Data (JSON-LD) — one script per graph for clearer AI/crawler parsing */}
+      {seoData().structuredData &&
+        (Array.isArray(seoData().structuredData)
+          ? seoData().structuredData.map((graph: object) => (
+              <script type="application/ld+json">{JSON.stringify(graph)}</script>
+            ))
+          : (
+              <script type="application/ld+json">
+                {JSON.stringify(seoData().structuredData)}
+              </script>
+            ))}
     </>
   );
 }

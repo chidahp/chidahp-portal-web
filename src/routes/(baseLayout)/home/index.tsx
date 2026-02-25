@@ -142,7 +142,7 @@ export default function Home() {
 
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
-      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "หน้าแรก", url: "https://www.chidahp.com/home" },
       { name: "บล็อกและบทความ", url: "https://www.chidahp.com/home" }
     ]);
 

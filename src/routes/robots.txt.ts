@@ -8,9 +8,6 @@ Allow: /
 # Sitemap
 Sitemap: https://www.chidahp.com/sitemap.xml
 
-# Crawl-delay
-Crawl-delay: 1
-
 # Disallow admin or private areas (if any)
 # Disallow: /admin/
 # Disallow: /private/
@@ -23,6 +20,14 @@ User-agent: Bingbot
 Allow: /
 
 User-agent: Slurp
+Allow: /
+
+# AI / LLM crawlers (for AI Search, citations)
+User-agent: GPTBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Claude-Web
 Allow: /`;
 
   return new Response(robotsTxt, {

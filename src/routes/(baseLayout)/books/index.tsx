@@ -62,7 +62,7 @@ export default function BooksPage() {
   // Create structured data for this page
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
-      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "หน้าแรก", url: "https://www.chidahp.com/home" },
       { name: "หนังสือ", url: "https://www.chidahp.com/books" }
     ]);
     

@@ -11,7 +11,7 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          
+          <meta name="theme-color" content="#7c3aed" />
           {/* Performance & Security Headers */}
           <meta name="referrer" content="strict-origin-when-cross-origin" />
           

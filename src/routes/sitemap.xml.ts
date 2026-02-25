@@ -7,13 +7,8 @@ export async function GET({ request }: APIEvent) {
 
   const pages = [
     {
-      url: `${baseUrl}/`,
-      priority: "1.0",
-      changefreq: "weekly",
-    },
-    {
       url: `${baseUrl}/home`,
-      priority: "0.9",
+      priority: "1.0",
       changefreq: "daily",
     },
     {

@@ -82,7 +82,7 @@ export default function PodcastPage() {
   // Create structured data for this page
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
-      { name: "หน้าแรก", url: "https://www.chidahp.com" },
+      { name: "หน้าแรก", url: "https://www.chidahp.com/home" },
       { name: "พอดแคสต์", url: "https://www.chidahp.com/podcast" }
     ]);
     

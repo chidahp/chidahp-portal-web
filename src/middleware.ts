@@ -8,29 +8,33 @@ export default createMiddleware({
       const bypassKey = url.searchParams.get("bypass");
       
       // Skip redirect for internal routes and assets
-      if (url.pathname.startsWith("/_") || 
+      if (url.pathname.startsWith("/_") ||
           url.pathname.startsWith("/api/") ||
           url.pathname.includes(".")) {
         return;
       }
-      
+
+      // SEO: canonical home is /home — 301 redirect so crawlers and AI use one URL
+      if (url.pathname === "/" || url.pathname === "") {
+        return Response.redirect(new URL("/home", event.request.url), 301);
+      }
+
       if (isMaintenanceMode) {
         // Allow bypass with query parameter
         if (bypassKey === "admin") {
           return;
         }
-        
         // Allow access to maintenance page only when maintenance mode is enabled
         if (url.pathname === "/maintenance") {
           return;
         }
         // Redirect all other pages to maintenance
         return Response.redirect(new URL("/maintenance", event.request.url), 302);
-      } else {
-        // When maintenance mode is disabled, redirect maintenance page to home
-        if (url.pathname === "/maintenance") {
-          return Response.redirect(new URL("/home", event.request.url), 302);
-        }
+      }
+
+      // When maintenance mode is disabled, redirect maintenance page to home
+      if (url.pathname === "/maintenance") {
+        return Response.redirect(new URL("/home", event.request.url), 302);
       }
     }
   ]

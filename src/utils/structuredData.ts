@@ -3,6 +3,7 @@
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": "https://www.chidahp.com/#organization",
   "name": "ชี้ดาบ",
   "alternateName": "สำนักพิมพ์ชี้ดาบ",
   "url": "https://www.chidahp.com",
@@ -28,13 +29,13 @@ export const organizationSchema = {
 export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": "https://www.chidahp.com/#website",
   "name": "ชี้ดาบ",
+  "alternateName": "สำนักพิมพ์ชี้ดาบ",
   "url": "https://www.chidahp.com",
+  "inLanguage": "th",
   "description": "สำนักพิมพ์ที่ว่าด้วยการเติบโต ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ",
-  "publisher": {
-    "@type": "Organization",
-    "name": "ชี้ดาบ"
-  },
+  "publisher": { "@id": "https://www.chidahp.com/#organization" },
   "potentialAction": {
     "@type": "SearchAction",
     "target": "https://www.chidahp.com/search?q={search_term_string}",
@@ -124,12 +125,21 @@ export const articleSchema = (article: any) => ({
   }
 });
 
-export const collectionPageSchema = (pageType: string, items: any[]) => ({
+const collectionPagePath: Record<string, string> = {
+  "หนังสือ": "books",
+  "วิดีโอ": "podcast",
+  "บทความ": "home",
+};
+
+export const collectionPageSchema = (pageType: string, items: any[], path?: string) => {
+  const segment = path ?? collectionPagePath[pageType] ?? pageType.toLowerCase();
+  return {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": `ชี้ดาบ - ${pageType}`,
   "description": `รวม${pageType}ทั้งหมดจากชี้ดาบ`,
-  "url": `https://www.chidahp.com/${pageType.toLowerCase()}`,
+  "url": `https://www.chidahp.com/${segment}`,
+  "inLanguage": "th",
   "mainEntity": {
     "@type": "ItemList",
     "numberOfItems": items.length,
@@ -143,4 +153,5 @@ export const collectionPageSchema = (pageType: string, items: any[]) => ({
       }
     }))
   }
-});
+  };
+};
