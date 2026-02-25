@@ -1,6 +1,5 @@
 
-import { createSignal, createEffect, createResource, For, Show } from 'solid-js';
-import { action, useAction } from '@solidjs/router';
+import { createResource, For, Show } from 'solid-js';
 import BlogCard from '../../../components/BlogCard';
 import SkeletonLoader from '../../../components/SkeletonLoader';
 import Seo from '../../../components/SEO';
@@ -57,8 +56,7 @@ interface ApiResponse {
   };
 }
 
-export const fetchPostsAction = action(async (formData: FormData) => {
-  "use server";
+async function fetchPosts(): Promise<Post[]> {
   try {
     const response = await fetch('https://playground.chidahp.com/api/book-reviewer?limit=7', {
       headers: {
@@ -74,14 +72,13 @@ export const fetchPostsAction = action(async (formData: FormData) => {
     const data: ApiResponse = await response.json();
 
     if (data.success) {
-      return { posts: data.data.posts, error: null };
-    } else {
-      throw new Error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+      return data.data.posts;
     }
-  } catch (err) {
-    return { posts: [], error: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้' };
+    return [];
+  } catch {
+    return [];
   }
-});
+}
 
 async function fetchLatestBooks() {
   try {
@@ -126,19 +123,9 @@ const stripHtml = (html: string): string => {
 };
 
 export default function Home() {
-  const fetchPosts = useAction(fetchPostsAction);
-  const [posts, setPosts] = createSignal<Post[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = createSignal(true);
+  const [posts] = createResource(fetchPosts);
   const [latestBooks] = createResource(fetchLatestBooks);
   const [latestPodcasts] = createResource(fetchLatestPodcasts);
-
-  createEffect(async () => {
-    setIsInitialLoading(true);
-    const formData = new FormData();
-    const result = await fetchPosts(formData);
-    setPosts(result.posts);
-    setIsInitialLoading(false);
-  });
 
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
@@ -146,7 +133,7 @@ export default function Home() {
       { name: "บล็อกและบทความ", url: "https://www.chidahp.com/home" }
     ]);
 
-    const collectionData = posts().length > 0 ? collectionPageSchema("บทความ", posts().map(post => ({
+    const collectionData = (posts() ?? []).length > 0 ? collectionPageSchema("บทความ", (posts() ?? []).map(post => ({
       title: post.title,
       url: `https://playground.chidahp.com/${post.slug}`
     }))) : null;
@@ -182,17 +169,17 @@ export default function Home() {
           </div>
 
           {/* Featured Post */}
-          <Show when={!isInitialLoading()} fallback={<SkeletonLoader />}>
-            <Show when={posts().length > 0}>
+          <Show when={!posts.loading} fallback={<SkeletonLoader />}>
+            <Show when={(posts() ?? []).length > 0}>
               <a
-                href={`https://playground.chidahp.com/category/chidahp-book-reviewer/${posts()[0].slug}`}
+                href={`https://playground.chidahp.com/category/chidahp-book-reviewer/${posts()![0].slug}`}
                 class="group block bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200 mb-8 sm:mb-10"
               >
                 <div class="grid grid-cols-1 md:grid-cols-2">
                   <div class="relative overflow-hidden">
                     <img
-                      src={posts()[0].featuredImage?.node.sourceUrl || '/chidahp.webp'}
-                      alt={posts()[0].featuredImage?.node.altText || posts()[0].title}
+                      src={posts()![0].featuredImage?.node.sourceUrl || '/chidahp.webp'}
+                      alt={posts()![0].featuredImage?.node.altText || posts()![0].title}
                       class="w-full h-56 md:h-full min-h-[280px] object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div class="absolute top-4 left-4">
@@ -203,7 +190,7 @@ export default function Home() {
                   </div>
                   <div class="p-6 sm:p-8 flex flex-col justify-center">
                     <div class="flex flex-wrap items-center gap-2 mb-3">
-                      <For each={posts()[0].categories.nodes}>
+                      <For each={posts()![0].categories.nodes}>
                         {(cat) => (
                           <span class="text-xs text-purple-600 font-medium bg-purple-50 px-2.5 py-1 rounded-full">
                             {cat.name}
@@ -212,23 +199,23 @@ export default function Home() {
                       </For>
                     </div>
                     <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-700 transition-colors leading-snug">
-                      {posts()[0].title}
+                      {posts()![0].title}
                     </h2>
                     <p class="text-gray-600 text-sm md:text-base mb-5 line-clamp-3 leading-relaxed">
-                      {stripHtml(posts()[0].excerpt)}
+                      {stripHtml(posts()![0].excerpt)}
                     </p>
                     <div class="flex items-center gap-3">
-                      <Show when={posts()[0].author.node.avatar}>
+                      <Show when={posts()![0].author.node.avatar}>
                         <img
-                          src={posts()[0].author.node.avatar.url}
-                          alt={posts()[0].author.node.name}
+                          src={posts()![0].author.node.avatar.url}
+                          alt={posts()![0].author.node.name}
                           class="w-9 h-9 rounded-full object-cover"
                         />
                       </Show>
                       <div>
-                        <p class="text-sm font-medium text-gray-900">{posts()[0].author.node.name}</p>
+                        <p class="text-sm font-medium text-gray-900">{posts()![0].author.node.name}</p>
                         <time class="text-xs text-gray-500">
-                          {new Date(posts()[0].date).toLocaleDateString('th-TH', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          {new Date(posts()![0].date).toLocaleDateString('th-TH', { month: 'long', day: 'numeric', year: 'numeric' })}
                         </time>
                       </div>
                     </div>
@@ -237,9 +224,9 @@ export default function Home() {
               </a>
 
               {/* Blog Posts Grid (remaining posts) */}
-              <Show when={posts().length > 1}>
+              <Show when={(posts() ?? []).length > 1}>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                  <For each={posts().slice(1)}>
+                  <For each={(posts() ?? []).slice(1)}>
                     {(post) => <BlogCard post={post} />}
                   </For>
                 </div>
