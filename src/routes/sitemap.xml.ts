@@ -27,6 +27,11 @@ export async function GET({ request }: APIEvent) {
       changefreq: "monthly",
     },
     {
+      url: `${baseUrl}/llms.txt`,
+      priority: "0.8",
+      changefreq: "monthly",
+    },
+    {
       url: `https://playground.chidahp.com/sitemap.xml`,
       priority: "0.6",
       changefreq: "weekly",

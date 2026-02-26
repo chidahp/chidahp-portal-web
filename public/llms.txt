@@ -1,0 +1,54 @@
+# ชี้ดาบ (Chidahp) - สำนักพิมพ์ที่ว่าด้วยการเติบโต
+
+> ไฟล์นี้จัดทำเพื่อให้ AI, LLM และ crawlers อ่านสรุปเว็บไซต์ได้รวดเร็ว (llms.txt)
+
+## เกี่ยวกับเรา
+
+ชี้ดาบ (Chidahp) คือ **สำนักพิมพ์ที่ว่าด้วยการเติบโต** ที่ถ่ายทอดประสบการณ์จริงผ่านหนังสือ เปลี่ยนความเศร้า ความล้มเหลว และการเดินทาง ให้กลายเป็นความเข้าใจชีวิต
+
+- **ภาษา**: ไทย (th)
+- **เว็บหลัก**: https://www.chidahp.com
+- **ผู้ก่อตั้ง**: ธีรนัย โสตถิปิณฑะ (เจม)
+
+## โครงสร้างเว็บไซต์
+
+- **หน้าแรก / บทความ**: https://www.chidahp.com/home  
+  บล็อกและบทความ รีวิวหนังสือ แรงบันดาลใจ การเดินทาง
+
+- **หนังสือ**: https://www.chidahp.com/books  
+  หนังสือทั้งหมดของชี้ดาบ หนังสือเดินทาง แรงบันดาลใจ พัฒนาตัวเอง
+
+- **พอดแคสต์**: https://www.chidahp.com/podcast  
+  วิดีโอจาก YouTube ช่อง Chidahp แรงบันดาลใจและการเติบโต
+
+- **Timeline**: https://www.chidahp.com/timeline  
+  เส้นทางและประวัติการเติบโตของสำนักพิมพ์ชี้ดาบ
+
+- **นโยบายความเป็นส่วนตัว**: https://www.chidahp.com/privacy-policy
+
+- **ร้านค้าออนไลน์**: https://chidahp.page365.net/
+- **Playground (API/บล็อก)**: https://playground.chidahp.com
+
+## คำสำคัญ (Keywords)
+
+หลัก: ชี้ดาบ, สำนักพิมพ์ชี้ดาบ, หนังสือเดินทาง, แรงบันดาลใจ  
+รอง: พัฒนาตัวเอง, การเดินทาง, เจม, Route13, อินเดีย, ญี่ปุ่น, อเมริกา  
+ยาว: หนังสือแรงบันดาลใจ, พอดแคสต์แรงบันดาลใจ, เรื่องราวการเดินทาง, การเติบโตในชีวิต
+
+## ช่องทางติดต่อและโซเชียล
+
+- YouTube: https://www.youtube.com/@Chidahp
+- Facebook: https://www.facebook.com/chidahp
+- Instagram: https://www.instagram.com/chidahp
+- Twitter/X: https://x.com/chidahp
+- Line: https://line.me/ti/p/~@chidahp
+- TikTok: https://www.tiktok.com/@chidahp
+
+## สำหรับ crawlers
+
+- Sitemap: https://www.chidahp.com/sitemap.xml
+- Robots: https://www.chidahp.com/robots.txt
+- เนื้อหาหลักเป็นภาษาไทย เกี่ยวกับหนังสือ แรงบันดาลใจ การเดินทาง และสำนักพิมพ์ชี้ดาบ
+
+---
+Last updated: 2026-02
