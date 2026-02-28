@@ -4,6 +4,8 @@ const AUTO_PLAY_INTERVAL_MS = 5000;
 
 const BOOKS_PER_SLIDE = 4;
 
+const SWIPE_THRESHOLD_PX = 50;
+
 export interface LatestBook {
   image: string;
   title: string;
@@ -33,6 +35,20 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
 
   const goPrev = () => setCurrentSlide((i) => (i <= 0 ? totalSlides() - 1 : i - 1));
   const goNext = () => setCurrentSlide((i) => (i >= totalSlides() - 1 ? 0 : i + 1));
+
+  let touchStartX = 0;
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!hasMultipleSlides()) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > SWIPE_THRESHOLD_PX) {
+      if (diff > 0) goNext();
+      else goPrev();
+    }
+  };
 
   onMount(() => {
     if (!hasMultipleSlides()) return;
@@ -88,7 +104,12 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
           </div>
         </div>
 
-        <div class="relative overflow-hidden w-full">
+        <div
+          class="relative overflow-hidden w-full touch-pan-y"
+          ontouchstart={handleTouchStart}
+          ontouchend={handleTouchEnd}
+          aria-label="สไลด์หนังสือ"
+        >
           <div
             class="flex transition-transform duration-300 ease-out"
             style={{
