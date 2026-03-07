@@ -19,9 +19,9 @@ export default createHandler(() => (
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
           <link rel="preconnect" href="https://www.youtube.com" />
-          <link rel="dns-prefetch" href="https://playground.chidahp.com" />
-          <link rel="dns-prefetch" href="https://chidahp-book.playground-chidahp.workers.dev" />
-          <link rel="dns-prefetch" href="https://chidahp-podcast.playground-chidahp.workers.dev" />
+          <link rel="preconnect" href="https://playground.chidahp.com" crossorigin />
+          <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin />
+          <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin />
           
           {/* Google AdSense */}
           <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360416910031647" crossorigin="anonymous"></script>

@@ -1,6 +1,4 @@
-
-import { createSignal, createEffect, createResource } from 'solid-js';
-import { action, useAction } from '@solidjs/router';
+import { createResource } from 'solid-js';
 import Seo from '../../../components/SEO';
 import HomeBlogSection from '../../../components/home/HomeBlogSection';
 import LatestBookSection from '../../../components/home/LatestBookSection';
@@ -58,31 +56,18 @@ interface ApiResponse {
   };
 }
 
-export const fetchPostsAction = action(async (formData: FormData) => {
-  "use server";
+async function fetchPosts(): Promise<Post[]> {
   try {
     const response = await fetch('https://playground.chidahp.com/api/book-reviewer?limit=7', {
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      }
+      headers: { Accept: 'application/json' }
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data: ApiResponse = await response.json();
-
-    if (data.success) {
-      return { posts: data.data.posts, error: null };
-    } else {
-      throw new Error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
-    }
-  } catch (err) {
-    return { posts: [], error: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้' };
+    return data.success ? data.data.posts : [];
+  } catch {
+    return [];
   }
-});
+}
 
 async function fetchLatestBooks() {
   try {
@@ -119,31 +104,23 @@ async function fetchLatestPodcasts() {
 }
 
 export default function Home() {
-  const fetchPosts = useAction(fetchPostsAction);
-  const [posts, setPosts] = createSignal<Post[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = createSignal(true);
+  const [postsResource] = createResource(fetchPosts);
   const [latestBooks] = createResource(fetchLatestBooks);
   const [latestPodcasts] = createResource(fetchLatestPodcasts);
 
-  createEffect(async () => {
-    setIsInitialLoading(true);
-    const formData = new FormData();
-    const result = await fetchPosts(formData);
-    setPosts(result.posts);
-    setIsInitialLoading(false);
-  });
+  const posts = () => postsResource() ?? [];
+  const isInitialLoading = () => postsResource.state === 'pending';
 
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
       { name: "หน้าแรก", url: "https://www.chidahp.com/home" },
       { name: "บล็อกและบทความ", url: "https://www.chidahp.com/home" }
     ]);
-
-    const collectionData = posts().length > 0 ? collectionPageSchema("บทความ", posts().map(post => ({
+    const list = posts();
+    const collectionData = list.length > 0 ? collectionPageSchema("บทความ", list.map(post => ({
       title: post.title,
       url: `https://playground.chidahp.com/${post.slug}`
     }))) : null;
-
     return [breadcrumbs, collectionData].filter(Boolean);
   };
 

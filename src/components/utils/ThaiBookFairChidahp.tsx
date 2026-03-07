@@ -57,6 +57,10 @@ export default function ThaiBookFairChidahp() {
               <img
                 src="/book-fair-2026.png"
                 alt="สัปดาห์หนังสือแห่งชาติ ครั้งที่ 54"
+                width="220"
+                height="320"
+                fetchpriority="high"
+                decoding="async"
                 class="relative w-[160px] sm:w-[200px] md:w-[220px] rounded-xl shadow-2xl ring-1 ring-white/20 group-hover:scale-[1.03] transition-transform duration-500"
               />
             </div>

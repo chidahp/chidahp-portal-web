@@ -1,12 +1,12 @@
 import { RouteSectionProps, useLocation } from "@solidjs/router";
-import { createEffect } from "solid-js";
+import { createEffect, lazy, Suspense } from "solid-js";
 import { Footer } from "~/components/Footer";
 import Nav from "~/components/Nav";
 import BookHero from "~/components/utils/BookHero";
 import ChidahpPodcastHero from "~/components/utils/ChidahpPodcastHero";
-import SouthDakotaHero from "~/components/utils/SouthDakotaHero";
-import ThaiBookFairChidahp from "~/components/utils/ThaiBookFairChidahp";
 import TimelineHero from "~/components/utils/TimelineHero";
+
+const ThaiBookFairChidahp = lazy(() => import("~/components/utils/ThaiBookFairChidahp"));
 
 // Google Analytics tracking function
 declare global {
@@ -42,8 +42,11 @@ export default function HomeLayout(props: RouteSectionProps) {
       {/* Top Nav */}
       <Nav />
       {location.pathname === '/timeline' && <TimelineHero />}
-      {location.pathname === '/home' && <ThaiBookFairChidahp />}
-      {/* {location.pathname === '/home' && <SouthDakotaHero />}   */}
+      {location.pathname === '/home' && (
+        <Suspense fallback={<div class="h-48 sm:h-56 bg-gradient-to-br from-sky-600/80 to-indigo-800/80 animate-pulse" />}>
+          <ThaiBookFairChidahp />
+        </Suspense>
+      )}
       {location.pathname === '/podcast' && <ChidahpPodcastHero />}
       {location.pathname === '/books' && <BookHero />}
       {/* Main Content (centered horizontally) */}
