@@ -5,7 +5,7 @@ import SkeletonLoader from '../SkeletonLoader';
 interface Author {
   name: string;
   slug: string;
-  avatar: {
+  avatar?: {
     url: string;
   };
   description?: string;
@@ -71,7 +71,7 @@ export default function HomeBlogSection(props: HomeBlogSectionProps) {
       <Show when={!props.isInitialLoading} fallback={<SkeletonLoader />}>
         <Show when={props.posts.length > 0}>
           <a
-            href={`https://playground.chidahp.com/category/chidahp-book-reviewer/${props.posts[0].slug}`}
+            href={`https://playground.chidahp.com/category/chulo-reviewer/${props.posts[0].slug}`}
             class="group block bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200 mb-8 sm:mb-10"
           >
             <div class="grid grid-cols-1 md:grid-cols-2">
@@ -104,7 +104,7 @@ export default function HomeBlogSection(props: HomeBlogSectionProps) {
                   {stripHtml(props.posts[0].excerpt)}
                 </p>
                 <div class="flex items-center gap-3">
-                  <Show when={props.posts[0].author.node.avatar}>
+                  <Show when={props.posts[0].author.node.avatar?.url}>
                     <img
                       src={props.posts[0].author.node.avatar.url}
                       alt={props.posts[0].author.node.name}
@@ -136,7 +136,7 @@ export default function HomeBlogSection(props: HomeBlogSectionProps) {
       {/* "ดูเพิ่มเติม" Button */}
       <div class="flex justify-center mt-12 sm:mt-16">
         <a
-          href="https://playground.chidahp.com/category/chidahp-book-reviewer"
+          href="https://playground.chidahp.com/category/chulo-reviewer"
           target="_blank"
           rel="noopener noreferrer"
           class="group relative inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 px-8 sm:py-4 sm:px-10 rounded-full transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 shadow-lg hover:shadow-xl"

@@ -3,7 +3,7 @@ import { For } from 'solid-js';
 interface Author {
   name: string;
   slug: string;
-  avatar: {
+  avatar?: {
     url: string;
   };
   description?: string;
@@ -53,7 +53,7 @@ export default function BlogCard(props: BlogCardProps) {
 
   return (
     <a 
-      href={`https://playground.chidahp.com/category/chidahp-book-reviewer/${post.slug}`}
+      href={`https://playground.chidahp.com/category/chulo-reviewer/${post.slug}`}
       class="block group bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200 hover:-translate-y-1"
     >
       {/* Clean Image */}
@@ -100,7 +100,7 @@ export default function BlogCard(props: BlogCardProps) {
         <div class="flex items-center justify-between pt-3 border-t border-gray-50">
           <div class="flex items-center space-x-3">
             <div class="relative flex-shrink-0">
-              {post.author.node.avatar ? (
+              {post.author.node.avatar?.url ? (
                 <img 
                   src={post.author.node.avatar.url} 
                   alt={post.author.node.name}

@@ -1,69 +1,65 @@
 import { createResource } from 'solid-js';
 import Seo from '../../../components/SEO';
-// import HomeBlogSection from '../../../components/home/HomeBlogSection';
+import HomeBlogSection, { type Post } from '../../../components/home/HomeBlogSection';
 import LatestBookSection from '../../../components/home/LatestBookSection';
 import LatestPodcastSection from '../../../components/home/LatestPodcastSection';
 import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
 
-interface Author {
-  name: string;
-  slug: string;
-  avatar: {
-    url: string;
-  };
-  description?: string;
-}
-
-interface Category {
-  name: string;
-  slug: string;
-  parentId?: string;
-}
-
-interface Post {
+/** API response from playground.chidahp.com/api/v1/categories/chulo-reviewer/posts */
+interface ChuloReviewerApiPost {
   id: string;
   title: string;
   slug: string;
   excerpt: string;
-  date: string;
-  featuredImage?: {
-    node: {
-      sourceUrl: string;
-      altText: string;
-    };
-  };
-  author: {
-    node: Author;
-  };
-  categories: {
-    nodes: Category[];
+  featured_image: null | { url: string; alt: string };
+  published_at: string;
+  view_count: number;
+  reading_time: number;
+  url: string;
+  author: { name: string; slug: string; avatar_url: string | null };
+}
+
+interface ChuloReviewerApiResponse {
+  category: { slug: string; name: string };
+  posts: ChuloReviewerApiPost[];
+  pagination: { page: number; limit: number; total: number; hasMore: boolean };
+}
+
+function mapChuloReviewerPostToPost(apiPost: ChuloReviewerApiPost, category: { name: string; slug: string }): Post {
+  return {
+    id: apiPost.id,
+    title: apiPost.title,
+    slug: apiPost.slug,
+    excerpt: apiPost.excerpt,
+    date: apiPost.published_at,
+    featuredImage: apiPost.featured_image
+      ? { node: { sourceUrl: apiPost.featured_image.url, altText: apiPost.featured_image.alt } }
+      : undefined,
+    author: {
+      node: {
+        name: apiPost.author.name,
+        slug: apiPost.author.slug,
+        ...(apiPost.author.avatar_url && { avatar: { url: apiPost.author.avatar_url } })
+      }
+    },
+    categories: { nodes: [category] }
   };
 }
 
-interface ApiResponse {
-  success: boolean;
-  data: {
-    posts: Post[];
-    pagination: {
-      hasNextPage: boolean;
-      endCursor: string;
-    };
-    meta: {
-      category: string;
-      total: number;
-      limit: number;
-    };
-  };
-}
+const CHULO_REVIEWER_API = 'https://playground.chidahp.com/api/v1/categories/chulo-reviewer/posts';
 
 async function fetchPosts(): Promise<Post[]> {
   try {
-    const response = await fetch('https://playground.chidahp.com/api/book-reviewer?limit=7', {
-      headers: { Accept: 'application/json' }
-    });
+    const apiKey = import.meta.env.VITE_PLAYGROUND_API_KEY;
+    const headers: HeadersInit = { Accept: 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+    const response = await fetch(`${CHULO_REVIEWER_API}?page=1`, { headers });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data: ApiResponse = await response.json();
-    return data.success ? data.data.posts : [];
+    const data: ChuloReviewerApiResponse = await response.json();
+
+    const category = data.category ?? { name: 'Chulo Reviewer', slug: 'chulo-reviewer' };
+    return (data.posts ?? []).map((p) => mapChuloReviewerPostToPost(p, category));
   } catch {
     return [];
   }
@@ -138,7 +134,7 @@ export default function Home() {
         <div class="max-w-6xl mx-auto">
           <LatestBookSection books={latestBooks()} />
           <LatestPodcastSection videos={latestPodcasts()} />
-          {/* <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} /> */}
+          <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
         </div>
       </main>
     </>
