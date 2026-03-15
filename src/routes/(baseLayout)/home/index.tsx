@@ -1,6 +1,6 @@
 import { createResource } from 'solid-js';
 import Seo from '../../../components/SEO';
-import HomeBlogSection from '../../../components/home/HomeBlogSection';
+// import HomeBlogSection from '../../../components/home/HomeBlogSection';
 import LatestBookSection from '../../../components/home/LatestBookSection';
 import LatestPodcastSection from '../../../components/home/LatestPodcastSection';
 import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
@@ -138,7 +138,7 @@ export default function Home() {
         <div class="max-w-6xl mx-auto">
           <LatestBookSection books={latestBooks()} />
           <LatestPodcastSection videos={latestPodcasts()} />
-          <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
+          {/* <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} /> */}
         </div>
       </main>
     </>
