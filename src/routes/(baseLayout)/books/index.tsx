@@ -1,6 +1,8 @@
-import { For, createResource, createSignal, createMemo, Show } from "solid-js";
+import { lazy, createResource, createSignal, createMemo, Show, Suspense } from "solid-js";
 import Seo from "../../../components/SEO";
 import { breadcrumbSchema, collectionPageSchema } from "../../../utils/structuredData";
+const BooksFullView = lazy(() => import("../../../components/books/BooksFullView"));
+const BooksTimelineView = lazy(() => import("../../../components/books/BooksTimelineView"));
 
 type BookItem = {
   title: string;
@@ -179,208 +181,33 @@ export default function BooksPage() {
           </div>
 
           <Show when={viewMode() === "full"}>
-            {/* Search + Filter bar */}
-            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 sm:p-5 mb-8">
-              <div class="flex flex-col gap-4">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div class="relative flex-1">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </span>
-                    <input
-                      type="search"
-                      placeholder="ค้นหาชื่อหนังสือ หรือผู้เขียน..."
-                      class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400 transition text-gray-900 placeholder-gray-400"
-                      value={search()}
-                      onInput={(e) => setSearch(e.currentTarget.value)}
-                      aria-label="ค้นหาหนังสือ"
-                    />
-                  </div>
-                  <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span class="text-sm text-gray-500 hidden sm:inline">สถานะ:</span>
-                    <For each={FILTER_OPTIONS}>
-                      {(opt) => (
-                        <button
-                          type="button"
-                          class="px-4 py-2 rounded-xl text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
-                          classList={{
-                            "bg-amber-500 text-black shadow-sm": filter() === opt.value,
-                            "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100": filter() !== opt.value,
-                          }}
-                          onClick={() => setFilter(opt.value)}
-                        >
-                          {opt.label}
-                        </button>
-                      )}
-                    </For>
-                  </div>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <label for="series-filter" class="text-sm text-gray-600 font-medium shrink-0">
-                    ซีรีส์:
-                  </label>
-                  <select
-                    id="series-filter"
-                    class="w-full sm:w-56 px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400 transition cursor-pointer"
-                    value={seriesFilter()}
-                    onChange={(e) => setSeriesFilter(e.currentTarget.value)}
-                    aria-label="กรองตามซีรีส์"
-                  >
-                    <option value={SERIES_ALL}>ทั้งหมด</option>
-                    <option value={SERIES_NONE}>ทั่วไป (ไม่มีซีรีส์)</option>
-                    <For each={seriesOptions()}>
-                      {(name) => (
-                        <option value={name}>{name}</option>
-                      )}
-                    </For>
-                  </select>
-                </div>
-              </div>
-              <Show when={books() && !books.loading && !books.error}>
-                <p class="mt-3 text-sm text-gray-500">
-                  แสดง <span class="font-semibold text-gray-700">{filteredBooks().length}</span> เล่ม
-                </p>
-              </Show>
-            </div>
-
-            <Show when={books.loading}>
-              <div class="flex flex-col items-center justify-center py-16 text-gray-500">
-                <div class="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-4" />
-                <p class="text-sm font-medium">กำลังโหลดหนังสือ...</p>
-              </div>
-            </Show>
-
-            <Show when={books.error}>
-              <div class="rounded-2xl bg-red-50 border border-red-100 p-6 text-center">
-                <p class="text-red-700 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
-                <p class="text-red-600 text-sm mt-1">{String(books.error)}</p>
-              </div>
-            </Show>
-
-            <Show when={books() && !books.error && filteredBooks().length === 0}>
-              <div class="rounded-2xl bg-gray-50 border border-gray-100 p-10 text-center">
-                <p class="text-gray-600 font-medium">ไม่พบหนังสือที่ตรงกับคำค้นหรือตัวกรอง</p>
-                <p class="text-gray-500 text-sm mt-1">ลองเปลี่ยนคำค้น ตัวกรองสถานะ หรือซีรีส์ «ทั้งหมด»</p>
-              </div>
-            </Show>
-
-            <Show when={books() && !books.error && filteredBooks().length > 0}>
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                <For each={filteredBooks()}>
-                  {(book) => (
-                    <article
-                      class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-100 transition-all duration-300 overflow-hidden flex flex-col"
-                    >
-                      <div class="aspect-[3/4] relative overflow-hidden bg-gray-100">
-                        <img
-                          src={book.image}
-                          alt={book.title}
-                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                        />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-                          {book.pinned && (
-                            <span class="bg-amber-500 text-black text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg shadow">
-                              แนะนำ
-                            </span>
-                          )}
-                          {Boolean(book.isNewRelease) && (
-                            <span class="bg-emerald-500 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg shadow">
-                              ใหม่
-                            </span>
-                          )}
-                          {Boolean(book.isBestSeller) && (
-                            <span class="bg-rose-500 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg shadow">
-                              ขายดี
-                            </span>
-                          )}
-                          {book.title.toUpperCase().includes("PRE-ORDER") && (
-                            <span class="bg-violet-500 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg shadow">
-                              Pre-order
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div class="p-3 sm:p-4 flex flex-col flex-1">
-                        <h2 class="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 min-h-[2.5em] leading-snug">
-                          {book.title}
-                        </h2>
-                        <p class="text-gray-500 text-xs sm:text-sm mt-1 truncate">{book.authors}</p>
-                        <Show when={book.series || book.releaseYear}>
-                          <p class="text-gray-400 text-xs mt-1 truncate">
-                            {[book.series, book.releaseYear ? `พ.ศ. ${book.releaseYear}` : ""]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </p>
-                        </Show>
-                        {book.buylink ? (
-                          <a
-                            href={book.buylink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="mt-3 sm:mt-4 inline-flex items-center justify-center font-bold py-2.5 rounded-xl text-sm bg-amber-500 hover:bg-amber-600 text-black hover:-translate-y-0.5 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
-                          >
-                            ดูรายละเอียด / สั่งซื้อ
-                          </a>
-                        ) : (
-                          <span class="mt-3 sm:mt-4 inline-flex items-center justify-center font-bold py-2.5 rounded-xl text-sm bg-gray-200 text-gray-500 cursor-not-allowed">
-                            เร็วๆ นี้
-                          </span>
-                        )}
-                      </div>
-                    </article>
-                  )}
-                </For>
-              </div>
-            </Show>
+            <Suspense fallback={<div class="h-40 animate-pulse rounded-2xl bg-gray-100" />}>
+              <BooksFullView
+                search={search()}
+                setSearch={setSearch}
+                filter={filter()}
+                setFilter={setFilter}
+                seriesFilter={seriesFilter()}
+                setSeriesFilter={setSeriesFilter}
+                seriesOptions={seriesOptions()}
+                filteredBooks={filteredBooks()}
+                booksLoading={books.loading}
+                booksError={books.error}
+                filterOptions={FILTER_OPTIONS}
+                seriesAll={SERIES_ALL}
+                seriesNone={SERIES_NONE}
+              />
+            </Suspense>
           </Show>
 
           <Show when={viewMode() === "timeline"}>
-            <section class="w-full">
-              <div class="mb-3 flex items-center justify-between gap-2">
-                <p class="text-sm text-gray-500">แตะปุ่ม + / - เพื่อขยายรูปบนมือถือ</p>
-                <div class="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
-                  <button
-                    type="button"
-                    class="w-8 h-8 rounded-lg text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    onClick={() => setTimelineZoom((z) => Math.max(1, +(z - 0.25).toFixed(2)))}
-                    aria-label="ย่อรูป"
-                  >
-                    -
-                  </button>
-                  <button
-                    type="button"
-                    class="px-2 h-8 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    onClick={() => setTimelineZoom(1)}
-                    aria-label="รีเซ็ตขนาดรูป"
-                  >
-                    {Math.round(timelineZoom() * 100)}%
-                  </button>
-                  <button
-                    type="button"
-                    class="w-8 h-8 rounded-lg text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    onClick={() => setTimelineZoom((z) => Math.min(3, +(z + 0.25).toFixed(2)))}
-                    aria-label="ขยายรูป"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-2 sm:p-4">
-                <div class="overflow-auto rounded-xl">
-                  <img
-                    src="/timeline-chidahp-books.webp"
-                    alt="ไทม์ไลน์หนังสือชี้ดาบ"
-                    class="block h-auto max-w-none rounded-xl"
-                    loading="lazy"
-                    style={{ width: `${timelineZoom() * 100}%` }}
-                  />
-                </div>
-              </div>
-            </section>
+            <Suspense fallback={<div class="h-40 animate-pulse rounded-2xl bg-gray-100" />}>
+              <BooksTimelineView
+                timelineZoom={timelineZoom()}
+                setTimelineZoom={setTimelineZoom}
+                setTimelineZoomDirect={setTimelineZoom}
+              />
+            </Suspense>
           </Show>
         </div>
       </main>

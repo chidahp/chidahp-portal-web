@@ -1,5 +1,4 @@
-import { createSignal, onMount, Show, For } from "solid-js";
-import axios from "axios";
+import { createEffect, createResource, createSignal, onMount, Show, For } from "solid-js";
 import Seo from "../../../components/SEO";
 import { breadcrumbSchema, collectionPageSchema } from "../../../utils/structuredData";
 
@@ -23,22 +22,39 @@ async function fetchPodcast(
   page: number,
   limit: number
 ): Promise<IApiResponse> {
-  const url = `https://chidahp-podcast.playground-chidahp.workers.dev/api/videos?playlist=${playlistId}&page=${page}&limit=${limit}&_t=${Date.now()}`;
-  const { data } = await axios.get<IApiResponse>(url);
-  return data;
+  const url = `https://chidahp-podcast.playground-chidahp.workers.dev/api/videos?playlist=${playlistId}&page=${page}&limit=${limit}`;
+  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
 }
 
 export default function PodcastPage() {
   const playlistId = "PLD51zfrpLJx4aoQGo7UniDRn1olnbiK9o";
+  const [firstPage] = createResource(() => fetchPodcast(playlistId, 1, 10));
   const [allVideos, setAllVideos] = createSignal<IPodcast[]>([]);
   const [currentPage, setCurrentPage] = createSignal(1);
   const [totalPages, setTotalPages] = createSignal(1);
   const [loading, setLoading] = createSignal(false);
-
-  // โหลดหน้าแรก
+  const [initialized, setInitialized] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
 
-  const loadPodcasts = async (page = 1) => {
+  createEffect(() => {
+    const initial = firstPage();
+    if (!initial || initialized()) return;
+    setAllVideos(initial.data ?? []);
+    setTotalPages(initial.totalPages ?? 1);
+    setInitialized(true);
+  });
+
+  createEffect(() => {
+    if (firstPage.error) {
+      setError("ไม่สามารถโหลดข้อมูลได้ ขออภัยในความไม่สะดวก 🥲");
+    }
+  });
+
+  const loadPodcasts = async (page: number) => {
     if (loading()) return;
     setLoading(true);
     setError(null);
@@ -55,8 +71,6 @@ export default function PodcastPage() {
   };
 
   onMount(() => {
-    loadPodcasts(1); // โหลดตอนเริ่มต้น
-
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -137,6 +151,12 @@ export default function PodcastPage() {
                     src={video.thumbnail}
                     alt={video.title}
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading={i() === 0 ? "eager" : "lazy"}
+                    fetchpriority={i() === 0 ? "high" : "auto"}
+                    decoding="async"
+                    width="1280"
+                    height="720"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   <a
                     href={`https://www.youtube.com/watch?v=${video.id}`}

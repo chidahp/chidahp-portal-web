@@ -13,6 +13,12 @@ interface LatestPodcastSectionProps {
 
 export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
   const [mounted, setMounted] = createSignal(false);
+  const formatDate = (published: string) =>
+    new Date(published).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   onMount(() => setMounted(true));
 
   return (
@@ -53,6 +59,12 @@ export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
                     src={video.thumbnail}
                     alt={video.title}
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    loading={index() === 0 ? "eager" : "lazy"}
+                    fetchpriority={index() === 0 ? "high" : "auto"}
+                    decoding="async"
+                    width="1280"
+                    height="720"
+                    sizes="(max-width: 640px) 100vw, 33vw"
                   />
                   <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/50 via-black/20 to-transparent group-hover:from-black/60 group-hover:via-black/30 transition-colors duration-300">
                     <div class="w-14 h-14 rounded-full flex items-center justify-center bg-red-600 shadow-xl ring-4 ring-white/20 group-hover:scale-110 group-hover:ring-white/40 transition-all duration-300">
@@ -72,11 +84,7 @@ export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
                     {video.title}
                   </h3>
                   <time class="text-xs text-gray-500 tabular-nums">
-                    {new Date(video.published).toLocaleDateString('th-TH', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    {formatDate(video.published)}
                   </time>
                 </div>
               </a>

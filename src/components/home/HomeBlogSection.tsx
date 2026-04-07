@@ -51,6 +51,9 @@ interface HomeBlogSectionProps {
 }
 
 export default function HomeBlogSection(props: HomeBlogSectionProps) {
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("th-TH", { month: "long", day: "numeric", year: "numeric" });
+
   return (
     <>
       {/* Header Section */}
@@ -80,6 +83,12 @@ export default function HomeBlogSection(props: HomeBlogSectionProps) {
                   src={props.posts[0].featuredImage?.node.sourceUrl || '/chidahp.webp'}
                   alt={props.posts[0].featuredImage?.node.altText || props.posts[0].title}
                   class="w-full h-56 md:h-full min-h-[280px] object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                  width="1200"
+                  height="800"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div class="absolute top-4 left-4">
                   <span class="bg-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">
@@ -109,12 +118,16 @@ export default function HomeBlogSection(props: HomeBlogSectionProps) {
                       src={props.posts[0].author.node.avatar.url}
                       alt={props.posts[0].author.node.name}
                       class="w-9 h-9 rounded-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      width="36"
+                      height="36"
                     />
                   </Show>
                   <div>
                     <p class="text-sm font-medium text-gray-900">{props.posts[0].author.node.name}</p>
                     <time class="text-xs text-gray-500">
-                      {new Date(props.posts[0].date).toLocaleDateString('th-TH', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {formatDate(props.posts[0].date)}
                     </time>
                   </div>
                 </div>

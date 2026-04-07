@@ -50,6 +50,11 @@ export default function BlogCard(props: BlogCardProps) {
       .replaceAll('[&hellip;]', '') // Remove [&hellip;] specifically
       .trim();
   };
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("th-TH", {
+      month: "short",
+      day: "numeric",
+    });
 
   return (
     <a 
@@ -63,12 +68,22 @@ export default function BlogCard(props: BlogCardProps) {
             src={post.featuredImage.node.sourceUrl} 
             alt={post.featuredImage.node.altText || post.title}
             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            decoding="async"
+            width="600"
+            height="384"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <img 
             src="/chidahp.webp" 
             alt={post.title}
             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            decoding="async"
+            width="600"
+            height="384"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         )}
         
@@ -105,6 +120,10 @@ export default function BlogCard(props: BlogCardProps) {
                   src={post.author.node.avatar.url} 
                   alt={post.author.node.name}
                   class="w-8 h-8 rounded-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  width="32"
+                  height="32"
                 />
               ) : (
                 <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
@@ -121,10 +140,7 @@ export default function BlogCard(props: BlogCardProps) {
           
           <div class="text-right">
             <time class="text-xs text-gray-500">
-              {new Date(post.date).toLocaleDateString('th-TH', {
-                month: 'short',
-                day: 'numeric'
-              })}
+              {formatDate(post.date)}
             </time>
           </div>
         </div>

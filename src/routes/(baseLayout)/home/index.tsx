@@ -1,9 +1,11 @@
-import { createResource } from 'solid-js';
+import { createResource, createSignal, lazy, onMount, Suspense } from "solid-js";
 import Seo from '../../../components/SEO';
-import HomeBlogSection, { type Post } from '../../../components/home/HomeBlogSection';
 import LatestBookSection from '../../../components/home/LatestBookSection';
-import LatestPodcastSection from '../../../components/home/LatestPodcastSection';
 import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
+import type { Post } from "../../../components/home/HomeBlogSection";
+
+const HomeBlogSection = lazy(() => import("../../../components/home/HomeBlogSection"));
+const LatestPodcastSection = lazy(() => import("../../../components/home/LatestPodcastSection"));
 
 /** API response from playground.chidahp.com/api/v1/categories/chulo-reviewer/posts */
 interface ChuloReviewerApiPost {
@@ -100,9 +102,21 @@ async function fetchLatestPodcasts() {
 }
 
 export default function Home() {
-  const [postsResource] = createResource(fetchPosts);
+  const [shouldLoadDeferred, setShouldLoadDeferred] = createSignal(false);
+  const [postsResource] = createResource(shouldLoadDeferred, (ready) => (ready ? fetchPosts() : []));
   const [latestBooks] = createResource(fetchLatestBooks);
-  const [latestPodcasts] = createResource(fetchLatestPodcasts);
+  const [latestPodcasts] = createResource(shouldLoadDeferred, (ready) =>
+    ready ? fetchLatestPodcasts() : []
+  );
+
+  onMount(() => {
+    const activateDeferred = () => setShouldLoadDeferred(true);
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(activateDeferred, { timeout: 1200 });
+      return;
+    }
+    window.setTimeout(activateDeferred, 300);
+  });
 
   const posts = () => postsResource() ?? [];
   const isInitialLoading = () => postsResource.state === 'pending';
@@ -133,8 +147,12 @@ export default function Home() {
       <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div class="max-w-6xl mx-auto">
           <LatestBookSection books={latestBooks()} />
-          <LatestPodcastSection videos={latestPodcasts()} />
-          <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
+          <Suspense fallback={<div class="h-24 animate-pulse rounded-2xl bg-gray-100" />}>
+            <LatestPodcastSection videos={latestPodcasts()} />
+          </Suspense>
+          <Suspense fallback={<div class="h-24 animate-pulse rounded-2xl bg-gray-100 mt-6" />}>
+            <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
+          </Suspense>
         </div>
       </main>
     </>

@@ -125,7 +125,7 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
                 >
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                     <For each={slideBooks}>
-                      {(book) => (
+                      {(book, bookIndex) => (
                         <a
                           href={book.buylink || undefined}
                           target="_blank"
@@ -137,6 +137,12 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
                               src={book.image}
                               alt={book.title}
                               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading={currentSlide() === 0 && bookIndex() < 2 ? "eager" : "lazy"}
+                              fetchpriority={currentSlide() === 0 && bookIndex() === 0 ? "high" : "auto"}
+                              decoding="async"
+                              width="480"
+                              height="640"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                             />
                             <div class="absolute top-2 left-2 flex flex-col gap-1">
                               <Show when={book.isNewRelease}>

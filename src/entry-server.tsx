@@ -16,6 +16,12 @@ export default createHandler(() => (
           <meta name="referrer" content="strict-origin-when-cross-origin" />
           
           {/* Preconnect to external domains for performance */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Noto+Sans+Thai:wght@100..900&display=swap"
+          />
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
           <link rel="preconnect" href="https://www.youtube.com" />
@@ -23,21 +29,37 @@ export default createHandler(() => (
           <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin />
           <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin />
           
-          {/* Google AdSense */}
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360416910031647" crossorigin="anonymous"></script>
-          
           {/* SEO Component */}
           <Seo 
             structuredData={[organizationSchema, websiteSchema]}
           />
           
-          {/* Google Analytics */}
-          <script async src="https://www.googletagmanager.com/gtag/js?id=G-K5QP91K4LT"></script>
           <script>
-            {`window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-K5QP91K4LT');`}
+            {`(function () {
+              var run = function () {
+                var ga = document.createElement("script");
+                ga.async = true;
+                ga.src = "https://www.googletagmanager.com/gtag/js?id=G-K5QP91K4LT";
+                document.head.appendChild(ga);
+
+                window.dataLayer = window.dataLayer || [];
+                window.gtag = function () { window.dataLayer.push(arguments); };
+                window.gtag("js", new Date());
+                window.gtag("config", "G-K5QP91K4LT");
+
+                var ads = document.createElement("script");
+                ads.async = true;
+                ads.crossOrigin = "anonymous";
+                ads.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360416910031647";
+                document.head.appendChild(ads);
+              };
+
+              if ("requestIdleCallback" in window) {
+                window.requestIdleCallback(run, { timeout: 2500 });
+              } else {
+                window.setTimeout(run, 1200);
+              }
+            })();`}
           </script>
           
           {/* Favicon and Icons */}
