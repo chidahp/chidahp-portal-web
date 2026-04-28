@@ -8,6 +8,11 @@ type TurnstileRenderOptions = {
   "error-callback"?: () => void;
 };
 
+type WaitlistErrorResponse = {
+  error?: string;
+  details?: unknown;
+};
+
 declare global {
   interface Window {
     turnstile?: {
@@ -82,6 +87,21 @@ export default function BookfeedWaitlistHero() {
   const applySubmitSuccess = (message: string) => {
     setSubmitMessage(message);
     setSubmitError(false);
+  };
+
+  const getReadableErrorMessage = (payload?: WaitlistErrorResponse) => {
+    const errorText = payload?.error?.trim().toLowerCase();
+    if (!errorText) return "";
+    if (errorText.includes("too many")) {
+      return "Too many attempts. Please wait a minute and try again.";
+    }
+    if (errorText.includes("invalid email")) {
+      return "Please enter a valid email address.";
+    }
+    if (errorText.includes("bot") || errorText.includes("turnstile")) {
+      return "Security check failed. Please retry the Turnstile challenge.";
+    }
+    return payload?.error?.trim() || "";
   };
 
   const renderTurnstileWidget = () => {
@@ -165,12 +185,30 @@ export default function BookfeedWaitlistHero() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: trimmedEmail,
+          token: turnstileToken(),
           turnstileToken: turnstileToken(),
           "cf-turnstile-response": turnstileToken(),
         }),
       });
 
       if (!response.ok) {
+        let errorPayload: WaitlistErrorResponse | undefined;
+        try {
+          errorPayload = (await response.json()) as WaitlistErrorResponse;
+        } catch {
+          errorPayload = undefined;
+        }
+
+        const messageFromApi = getReadableErrorMessage(errorPayload);
+        if (messageFromApi) {
+          applySubmitError(messageFromApi);
+          return;
+        }
+
+        console.error("Waitlist request failed", {
+          status: response.status,
+          payload: errorPayload,
+        });
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -180,7 +218,8 @@ export default function BookfeedWaitlistHero() {
       if (window.turnstile?.reset) {
         window.turnstile.reset(widgetId);
       }
-    } catch {
+    } catch (error) {
+      console.error("Waitlist submit error", error);
       applySubmitError("Unable to join right now. Please try again in a moment.");
     } finally {
       setIsSubmitting(false);
@@ -258,6 +297,11 @@ export default function BookfeedWaitlistHero() {
               )}
               {turnstileLoadError() && (
                 <p class="mt-2 text-xs text-rose-300">{turnstileLoadError()}</p>
+              )}
+              {!turnstileReady() && turnstileSiteKey && !turnstileLoadError() && (
+                <p class="mt-2 text-xs text-[#9CA3AF]">
+                  Complete the security check to enable submit.
+                </p>
               )}
             </div>
             {submitMessage() && (
