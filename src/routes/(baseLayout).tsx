@@ -2,11 +2,11 @@ import { RouteSectionProps, useLocation } from "@solidjs/router";
 import { createEffect, lazy, Suspense } from "solid-js";
 import { Footer } from "~/components/Footer";
 import Nav from "~/components/Nav";
-import type { SlideItem } from "~/components/utils/HomeResponsiveSlider";
 
 const BookHero = lazy(() => import("~/components/utils/BookHero"));
+const BookfeedWaitlistHero = lazy(() => import("~/components/utils/BookfeedWaitlistHero"));
 const ChidahpPodcastHero = lazy(() => import("~/components/utils/ChidahpPodcastHero"));
-const HomeResponsiveSlider = lazy(() => import("~/components/utils/HomeResponsiveSlider"));
+// const HomeResponsiveSlider = lazy(() => import("~/components/utils/HomeResponsiveSlider"));
 const TimelineHero = lazy(() => import("~/components/utils/TimelineHero"));
 
 // Google Analytics tracking function
@@ -17,31 +17,6 @@ declare global {
 }
 
 const GA_TRACKING_ID = "G-K5QP91K4LT";
-const homeSlides: SlideItem[] = [
-  {
-    title: "สำนักพิมพ์ที่ว่าด้วยการเติบโต",
-    description: "ทุกหน้าคือแรงบันดาลใจเล็กๆ ที่พาคุณก้าวไปไกลกว่าเมื่อวาน",
-    ctaLabel: "เริ่มต้นการเติบโต",
-    gradientClass: "from-sky-600 via-blue-700 to-indigo-800",
-  },
-  {
-    title: "รวมหนังสือชี้ดาบทั้งหมด",
-    description: "ค้นหาหนังสือใหม่ล่าสุด และหนังสือขายดีในที่เดียว",
-    ctaLabel: "ไปหน้าหนังสือ",
-    href: "/books",
-    image: "/timeline-chidahp-books.webp",
-    imageAlt: "ไทม์ไลน์หนังสือชี้ดาบ",
-    fullImage: false,
-    gradientClass: "from-amber-500 via-orange-500 to-rose-500",
-  },
-  {
-    title: "ฟังพอดแคสต์ชี้ดาบ",
-    description: "เติมไฟให้ทุกวัน ด้วยบทสนทนาที่ปลุกพลังใจและพาไปต่ออย่างมั่นคง",
-    ctaLabel: "ไปหน้าพอดแคสต์",
-    href: "/podcast",
-    gradientClass: "from-fuchsia-600 via-violet-600 to-indigo-700",
-  },
-];
 
 export default function HomeLayout(props: RouteSectionProps) {
   const location = useLocation();
@@ -69,7 +44,8 @@ export default function HomeLayout(props: RouteSectionProps) {
       <Nav />
       <Suspense fallback={<div class="h-[260px] sm:h-[320px] md:h-[360px] bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse" />}>
         {location.pathname === "/timeline" && <TimelineHero />}
-        {location.pathname === "/home" && <HomeResponsiveSlider slides={homeSlides} />}
+        {/* {location.pathname === "/home" && <HomeResponsiveSlider slides={homeSlides} />} */}
+        {location.pathname === "/home" && <BookfeedWaitlistHero />}
         {location.pathname === "/podcast" && <ChidahpPodcastHero />}
         {location.pathname === "/books" && <BookHero />}
       </Suspense>
