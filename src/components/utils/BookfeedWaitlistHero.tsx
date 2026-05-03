@@ -539,16 +539,37 @@ export default function BookfeedWaitlistHero() {
               </div>
               <input type="hidden" name="cf-turnstile-response" value={turnstileToken()} />
             </form>
-            {submitMessage() && (
-              <p
-                class="mt-3 text-sm"
-                classList={{
-                  "text-emerald-300": !submitError(),
-                  "text-rose-300": submitError(),
-                }}
-              >
+            {submitMessage() && submitError() && (
+              <p class="mt-3 text-sm text-rose-300">
                 {submitMessage()}
               </p>
+            )}
+
+            {submitMessage() && !submitError() && (
+              <div class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+                <div class="flex items-start gap-3">
+                  <span
+                    class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300"
+                    aria-hidden="true"
+                  >
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42L8.5 12.08l6.79-6.79a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </span>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold text-emerald-200">
+                      {submitMessage()}
+                    </p>
+                    <p class="mt-1.5 text-xs leading-relaxed text-emerald-100/70">
+                      Don't see our email? Please check your
+                      <span class="font-semibold text-emerald-200"> Junk </span>
+                      or
+                      <span class="font-semibold text-emerald-200"> Spam </span>
+                      folder.
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
             <p class="mt-3 text-xs text-[#6B7280]">
