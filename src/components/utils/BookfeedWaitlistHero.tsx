@@ -111,6 +111,12 @@ export default function BookfeedWaitlistHero() {
 
   const [email, setEmail] = createSignal("");
   const [turnstileToken, setTurnstileToken] = createSignal("");
+  /** True once the Turnstile API has loaded and the widget DOM has been
+   *  rendered by Cloudflare (but the user may not have completed the
+   *  challenge yet). */
+  const [turnstileWidgetRendered, setTurnstileWidgetRendered] = createSignal(false);
+  /** True once the user has successfully completed the challenge — token
+   *  is available, form is safe to submit. */
   const [turnstileReady, setTurnstileReady] = createSignal(false);
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [submitMessage, setSubmitMessage] = createSignal("");
@@ -126,6 +132,12 @@ export default function BookfeedWaitlistHero() {
   const clearTurnstileState = () => {
     setTurnstileToken("");
     setTurnstileReady(false);
+  };
+
+  const markScriptError = (message: string) => {
+    if (!mountAlive) return;
+    setTurnstileLoadError(message);
+    setTurnstileWidgetRendered(false);
   };
 
   const applySubmitError = (message: string) => {
@@ -168,6 +180,11 @@ export default function BookfeedWaitlistHero() {
         "expired-callback": clearTurnstileState,
         "error-callback": clearTurnstileState,
       });
+      // The widget DOM is now in place — clear loading state and any
+      // prior error so the UI can show the challenge instead of a
+      // spinner.
+      setTurnstileWidgetRendered(true);
+      setTurnstileLoadError("");
       return true;
     } catch {
       return false;
@@ -251,6 +268,20 @@ export default function BookfeedWaitlistHero() {
 
   onMount(() => {
     queueBootstrap();
+    // Safety net: if the Turnstile script has not yielded a rendered
+    // widget within 15s (very slow network, ad blocker, regional CF
+    // outage, etc.), surface a friendly error so the user is not stuck
+    // staring at a spinner forever. The timer auto-clears once the
+    // widget renders.
+    const stalenessTimer = window.setTimeout(() => {
+      if (!mountAlive) return;
+      if (!turnstileWidgetRendered()) {
+        markScriptError(
+          "ระบบยืนยันตัวตนใช้เวลาโหลดนานกว่าปกติ — ลองรีเฟรชหน้าเว็บอีกครั้ง"
+        );
+      }
+    }, 15000);
+    onCleanup(() => window.clearTimeout(stalenessTimer));
   });
 
   onCleanup(() => {
@@ -270,6 +301,7 @@ export default function BookfeedWaitlistHero() {
       window.turnstile.remove(widgetId);
     }
     widgetId = undefined;
+    setTurnstileWidgetRendered(false);
   });
 
   const handleSubmit = async (event: SubmitEvent) => {
@@ -388,48 +420,125 @@ export default function BookfeedWaitlistHero() {
               Get early access and product updates before public launch.
             </p>
 
-            <form class="mt-6" onSubmit={handleSubmit}>
+            {/* Verification status box — surfaced ABOVE the form so it's
+                impossible to miss. Three visual states:
+                 1. Loading — animated spinner + "preparing security check"
+                 2. Ready (challenge visible) — Turnstile widget itself
+                 3. Verified — green checkmark + "verified" message
+                 4. Error — red text + retry hint
+                The actual Turnstile widget is mounted inside this box,
+                only revealed once the API has rendered it. The loading
+                placeholder occupies the same vertical space (min-h-[78px]
+                ≈ Turnstile widget height) so there is no layout shift
+                between states. */}
+            <div class="mt-6">
+              <div
+                class="relative w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 transition-colors"
+                classList={{
+                  "border-emerald-500/40 bg-emerald-500/5": turnstileReady(),
+                  "border-rose-500/40 bg-rose-500/5": !!turnstileLoadError(),
+                }}
+              >
+                {/* The Turnstile container is always in the tree so the
+                    ref attaches early; we just hide it visually until
+                    Cloudflare has actually rendered the widget into it. */}
+                <div
+                  class="min-h-[78px] w-full overflow-hidden transition-opacity"
+                  classList={{
+                    "opacity-0 pointer-events-none absolute inset-0": !turnstileWidgetRendered() || !!turnstileLoadError(),
+                    "opacity-100": turnstileWidgetRendered() && !turnstileLoadError(),
+                  }}
+                  aria-hidden={!turnstileWidgetRendered() || !!turnstileLoadError() ? "true" : undefined}
+                  ref={(el) => {
+                    turnstileContainer = el;
+                    // queueBootstrap is idempotent — onMount also calls it.
+                    if (el) queueBootstrap();
+                  }}
+                />
+
+                {/* Loading state */}
+                {!turnstileWidgetRendered() && !turnstileLoadError() && turnstileSiteKey && (
+                  <div class="flex min-h-[78px] items-center gap-3 px-1">
+                    <span
+                      class="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-[#FBBF24]/30 border-t-[#FBBF24]"
+                      aria-hidden="true"
+                    />
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-white">
+                        กำลังเตรียมระบบยืนยันตัวตน
+                      </p>
+                      <p class="mt-0.5 text-xs text-[#9CA3AF]">
+                        Loading Cloudflare Turnstile…
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {turnstileLoadError() && (
+                  <div class="flex min-h-[78px] items-center gap-3 px-1">
+                    <span class="h-5 w-5 shrink-0 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xs font-bold" aria-hidden="true">
+                      !
+                    </span>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-rose-200">
+                        โหลดระบบยืนยันตัวตนไม่สำเร็จ
+                      </p>
+                      <p class="mt-0.5 text-xs text-rose-300/80">
+                        {turnstileLoadError()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Verified pill — overlay on top-right of the widget once
+                    the user passes the challenge. Turnstile already shows
+                    its own checkmark, but this gives a stronger visual
+                    confirmation that the form is submittable. */}
+                {turnstileReady() && (
+                  <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                    <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42L8.5 12.08l6.79-6.79a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Verified
+                  </span>
+                )}
+              </div>
+
+              {!turnstileSiteKey && (
+                <p class="mt-2 text-xs text-amber-300">
+                  Missing `VITE_TURNSTILE_SITE_KEY` in environment.
+                </p>
+              )}
+            </div>
+
+            <form class="mt-4" onSubmit={handleSubmit}>
               <div class="flex w-full items-center gap-2">
                 <input
                   type="email"
                   placeholder="Enter your email"
                   value={email()}
                   onInput={(event) => setEmail(event.currentTarget.value)}
-                  class="h-11 flex-1 rounded-md border border-[#333333] bg-[#1F1F1F] px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#FBBF24] focus:outline-none"
+                  disabled={!turnstileReady() || isSubmitting()}
+                  class="h-11 flex-1 rounded-md border border-[#333333] bg-[#1F1F1F] px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#FBBF24] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                 />
                 <button
                   type="submit"
-                  disabled={isSubmitting()}
+                  disabled={!turnstileReady() || isSubmitting()}
                   class="h-11 rounded-md bg-[#FBBF24] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#F59E0B] disabled:cursor-not-allowed disabled:opacity-60"
+                  title={!turnstileReady() ? "ยืนยันตัวตนก่อนส่งฟอร์ม" : undefined}
                 >
-                  {isSubmitting() ? "Joining..." : "Join the Reading List"}
+                  {isSubmitting()
+                    ? "Joining..."
+                    : !turnstileWidgetRendered() && !turnstileLoadError()
+                      ? "กำลังเตรียม…"
+                      : !turnstileReady()
+                        ? "Verify to continue"
+                        : "Join the Reading List"}
                 </button>
               </div>
-            </form>
-            <div class="mt-3">
-              <div
-                class="min-h-[70px] w-full overflow-hidden"
-                ref={(el) => {
-                  turnstileContainer = el;
-                  // queueBootstrap is idempotent — onMount also calls it.
-                  if (el) queueBootstrap();
-                }}
-              />
               <input type="hidden" name="cf-turnstile-response" value={turnstileToken()} />
-              {!turnstileSiteKey && (
-                <p class="mt-2 text-xs text-amber-300">
-                  Missing `VITE_TURNSTILE_SITE_KEY` in environment.
-                </p>
-              )}
-              {turnstileLoadError() && (
-                <p class="mt-2 text-xs text-rose-300">{turnstileLoadError()}</p>
-              )}
-              {!turnstileReady() && turnstileSiteKey && !turnstileLoadError() && (
-                <p class="mt-2 text-xs text-[#9CA3AF]">
-                  Complete the security check to enable submit.
-                </p>
-              )}
-            </div>
+            </form>
             {submitMessage() && (
               <p
                 class="mt-3 text-sm"
