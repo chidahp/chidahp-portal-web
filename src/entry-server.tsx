@@ -61,13 +61,29 @@ export default createHandler(() => (
           <link rel="preconnect" href="https://playground.chidahp.com" crossorigin="anonymous" />
           <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin="anonymous" />
           <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin="anonymous" />
-          {/* Preconnect (not preload) — the actual request URL includes a
-              query string set at runtime by BookfeedWaitlistHero, so a
-              `<link rel="preload">` with the bare api.js URL would not be
-              reused and would just waste bandwidth on non-home pages. The
-              preconnect still saves the DNS + TLS roundtrip (~150–400ms on
-              cold cache). */}
           <link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin="anonymous" />
+          {/* Bootstrap the Turnstile global subscriber list and a stable
+              onload entry point BEFORE the Turnstile script loads. This
+              has to run inline as the document is parsed — if we waited
+              for the BookfeedWaitlistHero JS chunk to install it, the
+              script's onload could fire first and the call would no-op.
+              See BookfeedWaitlistHero.tsx for the matching subscriber
+              registration. */}
+          <script>
+            {`window.__chidahp_turnstile_subs=window.__chidahp_turnstile_subs||[];if(!window.__chidahp_turnstile_onload){window.__chidahp_turnstile_onload=function(){var s=window.__chidahp_turnstile_subs||[];s.slice().forEach(function(fn){try{fn()}catch(e){}});}}`}
+          </script>
+          {/* Load the Turnstile script as part of the initial HTML. The
+              browser preloader will start fetching it the moment the
+              parser hits this tag — no waiting for hydration. By the
+              time BookfeedWaitlistHero mounts and registers its
+              subscriber, the script is usually already loaded and
+              window.turnstile is ready, so the widget renders on the
+              very first frame after mount. */}
+          <script
+            id="cloudflare-turnstile-script"
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__chidahp_turnstile_onload"
+            async
+          />
 
           {/* SEO Component */}
           <Seo structuredData={[organizationSchema, websiteSchema]} />

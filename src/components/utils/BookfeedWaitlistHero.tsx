@@ -36,10 +36,13 @@ function turnstileScriptSrc() {
 
 /**
  * Install a stable, tab-lifetime onload entry that fans out to subscribers.
- * Critical: Turnstile script reads the function name from the `onload=` URL
- * param ONCE at execute time. If we delete the global on unmount and the
- * script later finishes loading, the call becomes a no-op and the widget
- * never renders. Subscribers can come and go safely; the global stays.
+ * The matching declaration is also rendered inline by entry-server.tsx so
+ * the global exists from the moment the parser hits that tag — long
+ * before this component's JS bundle has loaded. This belt-and-braces copy
+ * handles the (rare) case where the inline script was missed (e.g. hot
+ * reload, old cached HTML). Critical invariant: the Turnstile script
+ * reads the function name from the `onload=` URL param ONCE at execute
+ * time, so the global must never be deleted; subscribers come and go.
  */
 function installTurnstileGlobalOnce() {
   if (typeof window === "undefined") return;
