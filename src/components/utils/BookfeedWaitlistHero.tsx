@@ -59,6 +59,7 @@ function FeatureItem(props: { title: string; description: string }) {
 export default function BookfeedWaitlistHero() {
   let turnstileContainer: HTMLDivElement | undefined;
   let widgetId: string | undefined;
+  let existingScriptLoadHandler: (() => void) | undefined;
 
   const [email, setEmail] = createSignal("");
   const [turnstileToken, setTurnstileToken] = createSignal("");
@@ -118,8 +119,13 @@ export default function BookfeedWaitlistHero() {
     });
   };
 
-  onMount(() => {
-    if (!turnstileSiteKey || !turnstileContainer || typeof window === "undefined") {
+  const bootstrapTurnstile = (containerRetry = 0) => {
+    if (!turnstileSiteKey || typeof window === "undefined") return;
+
+    if (!turnstileContainer) {
+      if (containerRetry < 12) {
+        requestAnimationFrame(() => bootstrapTurnstile(containerRetry + 1));
+      }
       return;
     }
 
@@ -133,9 +139,18 @@ export default function BookfeedWaitlistHero() {
     ) as HTMLScriptElement | null;
 
     if (existingScript) {
-      existingScript.addEventListener("load", renderTurnstileWidget);
+      const onExistingScriptReady = () => {
+        setTurnstileLoadError("");
+        renderTurnstileWidget();
+      };
+      existingScriptLoadHandler = onExistingScriptReady;
+      existingScript.addEventListener("load", onExistingScriptReady);
       existingScript.addEventListener("error", () => {
         setTurnstileLoadError("Unable to load Turnstile widget.");
+      });
+      // If the script finished loading before this listener was attached, `load` never fires again.
+      queueMicrotask(() => {
+        if (window.turnstile) onExistingScriptReady();
       });
       return;
     }
@@ -153,11 +168,25 @@ export default function BookfeedWaitlistHero() {
       setTurnstileLoadError("Unable to load Turnstile widget.");
     };
     document.head.appendChild(script);
+  };
+
+  onMount(() => {
+    if (!turnstileSiteKey || typeof window === "undefined") return;
+    // Defer past ref attachment (lazy/Suspense) and past any in-flight script execution.
+    queueMicrotask(() => bootstrapTurnstile());
   });
 
   onCleanup(() => {
     if (widgetId && window.turnstile) {
       window.turnstile.remove(widgetId);
+    }
+    widgetId = undefined;
+    const existingScript = document.getElementById(
+      TURNSTILE_SCRIPT_ID
+    ) as HTMLScriptElement | null;
+    if (existingScript && existingScriptLoadHandler) {
+      existingScript.removeEventListener("load", existingScriptLoadHandler);
+      existingScriptLoadHandler = undefined;
     }
   });
 
