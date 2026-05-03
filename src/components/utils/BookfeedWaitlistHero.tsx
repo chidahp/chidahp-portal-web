@@ -22,6 +22,8 @@ declare global {
     };
     /** Cloudflare Turnstile `&onload=` entry — set before injecting the script tag. */
     __chidahp_turnstile_onload?: () => void;
+    /** Persistent subscriber list so SPA remount doesn't lose the load callback. */
+    __chidahp_turnstile_subs?: Array<() => void>;
   }
 }
 
@@ -30,6 +32,34 @@ const TURNSTILE_ONLOAD_GLOBAL = "__chidahp_turnstile_onload" as const;
 
 function turnstileScriptSrc() {
   return `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=${TURNSTILE_ONLOAD_GLOBAL}`;
+}
+
+/**
+ * Install a stable, tab-lifetime onload entry that fans out to subscribers.
+ * Critical: Turnstile script reads the function name from the `onload=` URL
+ * param ONCE at execute time. If we delete the global on unmount and the
+ * script later finishes loading, the call becomes a no-op and the widget
+ * never renders. Subscribers can come and go safely; the global stays.
+ */
+function installTurnstileGlobalOnce() {
+  if (typeof window === "undefined") return;
+  if (!window.__chidahp_turnstile_subs) {
+    window.__chidahp_turnstile_subs = [];
+  }
+  if (!window.__chidahp_turnstile_onload) {
+    window.__chidahp_turnstile_onload = () => {
+      const subs = window.__chidahp_turnstile_subs;
+      if (!subs) return;
+      // Snapshot before iterating in case a subscriber removes itself.
+      [...subs].forEach((fn) => {
+        try {
+          fn();
+        } catch (err) {
+          console.error("Turnstile subscriber failed", err);
+        }
+      });
+    };
+  }
 }
 
 function afterNextPaint(fn: () => void) {
@@ -70,9 +100,11 @@ function FeatureItem(props: { title: string; description: string }) {
 export default function BookfeedWaitlistHero() {
   let turnstileContainer: HTMLDivElement | undefined;
   let widgetId: string | undefined;
-  let existingScriptLoadHandler: (() => void) | undefined;
+  let onloadSubscriber: (() => void) | undefined;
   /** Prevents Turnstile callbacks / retries after unmount (SPA navigation). */
   let mountAlive = true;
+  /** Guards against double-bootstrap from ref callback + onMount running together. */
+  let bootstrapStarted = false;
 
   const [email, setEmail] = createSignal("");
   const [turnstileToken, setTurnstileToken] = createSignal("");
@@ -143,11 +175,14 @@ export default function BookfeedWaitlistHero() {
     if (!mountAlive) return;
     setTurnstileLoadError("");
     afterNextPaint(() => {
+      // Poll for up to ~10s while waiting on slow networks. The persistent
+      // global onload subscriber will also kick this off the moment the
+      // script finishes loading, so this is a defensive backstop.
       let attempts = 0;
       const tick = () => {
-        if (!mountAlive || widgetId || attempts++ > 55) return;
+        if (!mountAlive || widgetId || attempts++ > 100) return;
         if (renderTurnstileWidget()) return;
-        window.setTimeout(tick, 40);
+        window.setTimeout(tick, 100);
       };
       tick();
     });
@@ -164,6 +199,17 @@ export default function BookfeedWaitlistHero() {
       return;
     }
 
+    // Always register a persistent subscriber. This survives unmount/remount
+    // cycles and ensures we never miss the script's onload.
+    installTurnstileGlobalOnce();
+    if (!onloadSubscriber) {
+      onloadSubscriber = () => {
+        if (!mountAlive) return;
+        scheduleRenderWidget();
+      };
+      window.__chidahp_turnstile_subs!.push(onloadSubscriber);
+    }
+
     if (window.turnstile) {
       scheduleRenderWidget();
       return;
@@ -174,44 +220,34 @@ export default function BookfeedWaitlistHero() {
     ) as HTMLScriptElement | null;
 
     if (existingScript) {
-      const onExistingScriptReady = () => {
-        scheduleRenderWidget();
-      };
-      existingScriptLoadHandler = onExistingScriptReady;
-      existingScript.addEventListener("load", onExistingScriptReady);
-      existingScript.addEventListener("error", () => {
-        setTurnstileLoadError("Unable to load Turnstile widget.");
-      });
+      // Script tag already present (likely from a previous mount). The
+      // subscriber above will handle the load event. Also try once on next
+      // microtask in case window.turnstile became available between checks.
       queueMicrotask(() => {
-        if (window.turnstile) onExistingScriptReady();
+        if (window.turnstile) scheduleRenderWidget();
       });
       return;
     }
-
-    window.__chidahp_turnstile_onload = () => {
-      if (!mountAlive) return;
-      scheduleRenderWidget();
-    };
 
     const script = document.createElement("script");
     script.id = TURNSTILE_SCRIPT_ID;
     script.src = turnstileScriptSrc();
     script.async = true;
     script.onerror = () => {
-      setTurnstileLoadError("Unable to load Turnstile widget.");
-      delete window.__chidahp_turnstile_onload;
+      if (mountAlive) setTurnstileLoadError("Unable to load Turnstile widget.");
     };
     document.head.appendChild(script);
   };
 
   const queueBootstrap = () => {
+    if (bootstrapStarted) return;
     if (!turnstileSiteKey || typeof document === "undefined") return;
+    bootstrapStarted = true;
     queueMicrotask(() => bootstrapTurnstile());
   };
 
   onMount(() => {
     queueBootstrap();
-    afterNextPaint(() => bootstrapTurnstile());
   });
 
   onCleanup(() => {
@@ -220,18 +256,17 @@ export default function BookfeedWaitlistHero() {
       widgetId = undefined;
       return;
     }
-    delete window.__chidahp_turnstile_onload;
+    // Detach our subscriber but leave the global onload entry in place — the
+    // Turnstile script binds to its name once at execute time.
+    if (onloadSubscriber && window.__chidahp_turnstile_subs) {
+      const idx = window.__chidahp_turnstile_subs.indexOf(onloadSubscriber);
+      if (idx >= 0) window.__chidahp_turnstile_subs.splice(idx, 1);
+      onloadSubscriber = undefined;
+    }
     if (widgetId && window.turnstile) {
       window.turnstile.remove(widgetId);
     }
     widgetId = undefined;
-    const existingScript = document.getElementById(
-      TURNSTILE_SCRIPT_ID
-    ) as HTMLScriptElement | null;
-    if (existingScript && existingScriptLoadHandler) {
-      existingScript.removeEventListener("load", existingScriptLoadHandler);
-      existingScriptLoadHandler = undefined;
-    }
   });
 
   const handleSubmit = async (event: SubmitEvent) => {
@@ -300,15 +335,21 @@ export default function BookfeedWaitlistHero() {
   };
 
   return (
-    <section class="relative w-full overflow-hidden bg-[#060606]">
-      <div class="pointer-events-none absolute inset-0">
-        <div class="absolute -top-28 left-[-2%] h-80 w-80 rounded-full bg-amber-500/18 blur-3xl" />
-        <div class="absolute top-1/3 right-[-8%] h-96 w-96 rounded-full bg-orange-400/10 blur-3xl" />
-        <div class="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-yellow-300/10 blur-3xl" />
-        <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:42px_42px]" />
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.22),transparent_50%)]" />
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(245,158,11,0.12),transparent_55%)]" />
-      </div>
+    <section
+      class="relative w-full overflow-hidden bg-[#060606]"
+      style={{ contain: "paint" }}
+    >
+      {/* Decorative background — flattened to two cheap radial gradients +
+          one grid overlay. The previous version used 3 blur-3xl orbs which
+          forced large compositor layers and caused jank on mobile. */}
+      <div
+        class="pointer-events-none absolute inset-0"
+        style={{
+          "background-image":
+            "radial-gradient(ellipse at top, rgba(251,191,36,0.22), transparent 50%), radial-gradient(ellipse at bottom, rgba(245,158,11,0.12), transparent 55%), linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+          "background-size": "100% 100%, 100% 100%, 42px 42px, 42px 42px",
+        }}
+      />
 
       <div class="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
@@ -331,7 +372,9 @@ export default function BookfeedWaitlistHero() {
             </div>
           </div>
 
-          <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_60px_-24px_rgba(251,191,36,0.55)] backdrop-blur-md sm:backdrop-blur-xl sm:p-7">
+          {/* Removed backdrop-blur — backdrop filters are extremely
+              expensive on mobile and stack badly with sibling animations. */}
+          <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_18px_60px_-24px_rgba(251,191,36,0.55)] sm:p-7">
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#FBBF24]">
               Launch Waitlist
             </p>
@@ -365,6 +408,7 @@ export default function BookfeedWaitlistHero() {
                 class="min-h-[70px] w-full overflow-hidden"
                 ref={(el) => {
                   turnstileContainer = el;
+                  // queueBootstrap is idempotent — onMount also calls it.
                   if (el) queueBootstrap();
                 }}
               />

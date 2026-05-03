@@ -9,6 +9,36 @@ export interface LatestPodcastVideo {
 
 interface LatestPodcastSectionProps {
   videos: LatestPodcastVideo[] | undefined;
+  isLoading?: boolean;
+}
+
+function PodcastSkeleton() {
+  return (
+    <section class="mb-16 sm:mb-20" aria-busy="true" aria-label="กำลังโหลดพอดแคสต์">
+      <div class="flex items-end justify-between mb-8">
+        <div>
+          <span class="text-xs font-semibold tracking-widest uppercase text-red-500 mb-1 block">
+            Chidahp Podcast
+          </span>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            วิดีโอ & พอดแคสต์ล่าสุด
+          </h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
+        {Array.from({ length: 3 }).map(() => (
+          <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+            <div class="aspect-video bg-gray-200 animate-pulse" />
+            <div class="p-4 sm:p-5 space-y-2">
+              <div class="h-4 bg-gray-200 rounded animate-pulse" />
+              <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+              <div class="h-3 bg-gray-200 rounded w-20 animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
@@ -22,6 +52,10 @@ export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
   onMount(() => setMounted(true));
 
   return (
+    <Show
+      when={!props.isLoading}
+      fallback={<PodcastSkeleton />}
+    >
     <Show when={props.videos && props.videos.length > 0}>
       <section class="mb-16 sm:mb-20">
         <div class="flex items-end justify-between mb-8">
@@ -92,6 +126,7 @@ export default function LatestPodcastSection(props: LatestPodcastSectionProps) {
           </For>
         </div>
       </section>
+    </Show>
     </Show>
   );
 }

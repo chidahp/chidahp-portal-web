@@ -2,9 +2,14 @@ import { RouteSectionProps, useLocation } from "@solidjs/router";
 import { createEffect, lazy, Suspense } from "solid-js";
 import { Footer } from "~/components/Footer";
 import Nav from "~/components/Nav";
+// BookfeedWaitlistHero is the primary hero on the most-visited route (/home)
+// and contains the Turnstile widget bootstrap. Lazy-loading it caused: a
+// chunk waterfall on first visit, a Suspense fallback flash (visible jank),
+// CLS when the placeholder height didn't match the rendered hero, and
+// delayed Turnstile bootstrap. Inline import avoids all of that.
+import BookfeedWaitlistHero from "~/components/utils/BookfeedWaitlistHero";
 
 const BookHero = lazy(() => import("~/components/utils/BookHero"));
-const BookfeedWaitlistHero = lazy(() => import("~/components/utils/BookfeedWaitlistHero"));
 const ChidahpPodcastHero = lazy(() => import("~/components/utils/ChidahpPodcastHero"));
 // const HomeResponsiveSlider = lazy(() => import("~/components/utils/HomeResponsiveSlider"));
 const TimelineHero = lazy(() => import("~/components/utils/TimelineHero"));
@@ -51,15 +56,7 @@ export default function HomeLayout(props: RouteSectionProps) {
           <TimelineHero />
         </Suspense>
       )}
-      {location.pathname === "/home" && (
-        <Suspense
-          fallback={
-            <div class="min-h-[min(90vh,820px)] w-full bg-[#060606]" aria-hidden="true" />
-          }
-        >
-          <BookfeedWaitlistHero />
-        </Suspense>
-      )}
+      {location.pathname === "/home" && <BookfeedWaitlistHero />}
       {location.pathname === "/podcast" && (
         <Suspense
           fallback={

@@ -17,6 +17,35 @@ export interface LatestBook {
 
 interface LatestBookSectionProps {
   books: LatestBook[] | undefined;
+  isLoading?: boolean;
+}
+
+function BooksSkeleton() {
+  return (
+    <section class="mb-16 sm:mb-20" aria-busy="true" aria-label="กำลังโหลดหนังสือ">
+      <div class="flex items-end justify-between mb-8">
+        <div>
+          <span class="text-xs font-semibold tracking-widest uppercase text-yellow-600 mb-1 block">
+            From Our Publisher
+          </span>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            หนังสือจากสำนักพิมพ์ชี้ดาบ
+          </h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        {Array.from({ length: 4 }).map(() => (
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="aspect-[3/4] bg-gray-200 animate-pulse" />
+            <div class="p-3 sm:p-4 space-y-2">
+              <div class="h-4 bg-gray-200 rounded animate-pulse" />
+              <div class="h-3 bg-gray-200 rounded w-2/3 animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -59,6 +88,10 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
   });
 
   return (
+    <Show
+      when={!props.isLoading}
+      fallback={<BooksSkeleton />}
+    >
     <Show when={props.books && props.books.length > 0}>
       <section class="mb-16 sm:mb-20">
         <div class="flex items-end justify-between mb-8">
@@ -192,6 +225,7 @@ export default function LatestBookSection(props: LatestBookSectionProps) {
           </div>
         </Show>
       </section>
+    </Show>
     </Show>
   );
 }

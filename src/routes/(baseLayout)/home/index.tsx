@@ -1,11 +1,14 @@
-import { createResource, createSignal, lazy, onMount, Suspense } from "solid-js";
+import { createResource, createSignal, onMount } from "solid-js";
 import Seo from '../../../components/SEO';
 import LatestBookSection from '../../../components/home/LatestBookSection';
+import LatestPodcastSection from '../../../components/home/LatestPodcastSection';
+import HomeBlogSection, { type Post } from "../../../components/home/HomeBlogSection";
 import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
-import type { Post } from "../../../components/home/HomeBlogSection";
-
-const HomeBlogSection = lazy(() => import("../../../components/home/HomeBlogSection"));
-const LatestPodcastSection = lazy(() => import("../../../components/home/LatestPodcastSection"));
+// Previously these two sections were `lazy()`, which caused their entire
+// area on the page to stay blank while the JS chunk downloaded — and the
+// Suspense fallback flashed in/out. Each section already shows its own
+// in-place skeleton via the `isLoading` prop, so eager-importing them is
+// strictly better for perceived speed on the most-visited route.
 
 /** API response from playground.chidahp.com/api/v1/categories/chulo-reviewer/posts */
 interface ChuloReviewerApiPost {
@@ -104,8 +107,11 @@ async function fetchLatestPodcasts() {
 export default function Home() {
   const [shouldLoadDeferred, setShouldLoadDeferred] = createSignal(false);
   const [postsResource] = createResource(shouldLoadDeferred, (ready) => (ready ? fetchPosts() : []));
-  // In dev, skip SSR book fetch so the document is not blocked on workers.dev latency.
-  const [booksReady, setBooksReady] = createSignal(!import.meta.env.DEV);
+  // Always skip SSR for the book fetch — `chidahp-book.playground-chidahp.workers.dev`
+  // can cold-start in seconds, and we don't want the HTML response held
+  // hostage by it. Books load client-side as soon as the document is
+  // interactive, which is fast because the data is small.
+  const [booksReady, setBooksReady] = createSignal(false);
   const [latestBooks] = createResource(booksReady, (ready) =>
     ready ? fetchLatestBooks() : Promise.resolve([])
   );
@@ -114,12 +120,11 @@ export default function Home() {
   );
 
   onMount(() => {
+    // Books are first paint content — kick off immediately, but on the
+    // client only so we don't block SSR.
+    setBooksReady(true);
+
     const activateDeferred = () => setShouldLoadDeferred(true);
-    if (import.meta.env.DEV) {
-      setBooksReady(true);
-      queueMicrotask(activateDeferred);
-      return;
-    }
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(activateDeferred, { timeout: 1200 });
       return;
@@ -128,7 +133,17 @@ export default function Home() {
   });
 
   const posts = () => postsResource() ?? [];
-  const isInitialLoading = () => postsResource.state === 'pending';
+  // "Loading" means: we don't have a successful response yet. This covers
+  // every pre-data state (unresolved during SSR + before client activation,
+  // pending while fetching, refreshing on subsequent loads). It also
+  // ensures the SSR'd HTML contains the skeleton, so the user sees the
+  // skeleton instantly on first paint instead of an empty area.
+  const isInitialLoading = () =>
+    postsResource.state !== 'ready' && postsResource.state !== 'errored';
+  const isBooksLoading = () =>
+    latestBooks.state !== 'ready' && latestBooks.state !== 'errored';
+  const isPodcastsLoading = () =>
+    latestPodcasts.state !== 'ready' && latestPodcasts.state !== 'errored';
 
   const structuredData = () => {
     const breadcrumbs = breadcrumbSchema([
@@ -155,13 +170,12 @@ export default function Home() {
       />
       <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div class="max-w-6xl mx-auto">
-          <LatestBookSection books={latestBooks()} />
-          <Suspense fallback={<div class="h-24 animate-pulse rounded-2xl bg-gray-100" />}>
-            <LatestPodcastSection videos={latestPodcasts()} />
-          </Suspense>
-          <Suspense fallback={<div class="h-24 animate-pulse rounded-2xl bg-gray-100 mt-6" />}>
-            <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
-          </Suspense>
+          <LatestBookSection books={latestBooks()} isLoading={isBooksLoading()} />
+          <LatestPodcastSection
+            videos={latestPodcasts()}
+            isLoading={isPodcastsLoading()}
+          />
+          <HomeBlogSection posts={posts()} isInitialLoading={isInitialLoading()} />
         </div>
       </main>
     </>
