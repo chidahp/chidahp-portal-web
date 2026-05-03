@@ -39,6 +39,8 @@ export default createHandler(() => (
           <link rel="preconnect" href="https://playground.chidahp.com" crossorigin="anonymous" />
           <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin="anonymous" />
           <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin="anonymous" />
+          <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
+          <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
           {/* SEO Component */}
           <Seo structuredData={[organizationSchema, websiteSchema]} />

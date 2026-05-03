@@ -20,12 +20,17 @@ declare global {
       remove: (widgetId: string) => void;
       reset?: (widgetId?: string) => void;
     };
+    /** Cloudflare Turnstile `&onload=` entry — set before injecting the script tag. */
+    __chidahp_turnstile_onload?: () => void;
   }
 }
 
-const TURNSTILE_SCRIPT_SRC =
-  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const TURNSTILE_SCRIPT_ID = "cloudflare-turnstile-script";
+const TURNSTILE_ONLOAD_GLOBAL = "__chidahp_turnstile_onload" as const;
+
+function turnstileScriptSrc() {
+  return `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=${TURNSTILE_ONLOAD_GLOBAL}`;
+}
 
 function afterNextPaint(fn: () => void) {
   requestAnimationFrame(() => {
@@ -66,6 +71,8 @@ export default function BookfeedWaitlistHero() {
   let turnstileContainer: HTMLDivElement | undefined;
   let widgetId: string | undefined;
   let existingScriptLoadHandler: (() => void) | undefined;
+  /** Prevents Turnstile callbacks / retries after unmount (SPA navigation). */
+  let mountAlive = true;
 
   const [email, setEmail] = createSignal("");
   const [turnstileToken, setTurnstileToken] = createSignal("");
@@ -111,32 +118,54 @@ export default function BookfeedWaitlistHero() {
     return payload?.error?.trim() || "";
   };
 
-  const renderTurnstileWidget = () => {
-    if (typeof document === "undefined" || !window.turnstile || !turnstileContainer || widgetId) return;
-    widgetId = window.turnstile.render(turnstileContainer, {
-      sitekey: turnstileSiteKey,
-      theme: "dark",
-      callback: (token) => {
-        setTurnstileToken(token);
-        setTurnstileReady(true);
-      },
-      "expired-callback": clearTurnstileState,
-      "error-callback": clearTurnstileState,
+  /** Renders widget once API + container are ready; returns true when done or already rendered. */
+  const renderTurnstileWidget = (): boolean => {
+    if (!mountAlive || typeof document === "undefined" || !turnstileContainer || widgetId) return true;
+    if (!window.turnstile) return false;
+    try {
+      widgetId = window.turnstile.render(turnstileContainer, {
+        sitekey: turnstileSiteKey,
+        theme: "dark",
+        callback: (token) => {
+          setTurnstileToken(token);
+          setTurnstileReady(true);
+        },
+        "expired-callback": clearTurnstileState,
+        "error-callback": clearTurnstileState,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const scheduleRenderWidget = () => {
+    if (!mountAlive) return;
+    setTurnstileLoadError("");
+    afterNextPaint(() => {
+      let attempts = 0;
+      const tick = () => {
+        if (!mountAlive || widgetId || attempts++ > 55) return;
+        if (renderTurnstileWidget()) return;
+        window.setTimeout(tick, 40);
+      };
+      tick();
     });
   };
 
   const bootstrapTurnstile = (containerRetry = 0) => {
-    if (!turnstileSiteKey || typeof document === "undefined" || typeof window === "undefined") return;
+    if (!mountAlive || !turnstileSiteKey || typeof document === "undefined" || typeof window === "undefined")
+      return;
 
     if (!turnstileContainer) {
-      if (containerRetry < 90) {
+      if (containerRetry < 120) {
         requestAnimationFrame(() => bootstrapTurnstile(containerRetry + 1));
       }
       return;
     }
 
     if (window.turnstile) {
-      afterNextPaint(() => renderTurnstileWidget());
+      scheduleRenderWidget();
       return;
     }
 
@@ -146,46 +175,52 @@ export default function BookfeedWaitlistHero() {
 
     if (existingScript) {
       const onExistingScriptReady = () => {
-        setTurnstileLoadError("");
-        afterNextPaint(() => renderTurnstileWidget());
+        scheduleRenderWidget();
       };
       existingScriptLoadHandler = onExistingScriptReady;
       existingScript.addEventListener("load", onExistingScriptReady);
       existingScript.addEventListener("error", () => {
         setTurnstileLoadError("Unable to load Turnstile widget.");
       });
-      // If the script finished loading before this listener was attached, `load` never fires again.
       queueMicrotask(() => {
         if (window.turnstile) onExistingScriptReady();
       });
       return;
     }
 
+    window.__chidahp_turnstile_onload = () => {
+      if (!mountAlive) return;
+      scheduleRenderWidget();
+    };
+
     const script = document.createElement("script");
     script.id = TURNSTILE_SCRIPT_ID;
-    script.src = TURNSTILE_SCRIPT_SRC;
+    script.src = turnstileScriptSrc();
     script.async = true;
-    script.onload = () => {
-      setTurnstileLoadError("");
-      afterNextPaint(() => renderTurnstileWidget());
-    };
     script.onerror = () => {
       setTurnstileLoadError("Unable to load Turnstile widget.");
+      delete window.__chidahp_turnstile_onload;
     };
     document.head.appendChild(script);
   };
 
-  onMount(() => {
+  const queueBootstrap = () => {
     if (!turnstileSiteKey || typeof document === "undefined") return;
-    // Past lazy/Suspense commit + layout so the widget iframe measures correctly.
+    queueMicrotask(() => bootstrapTurnstile());
+  };
+
+  onMount(() => {
+    queueBootstrap();
     afterNextPaint(() => bootstrapTurnstile());
   });
 
   onCleanup(() => {
+    mountAlive = false;
     if (typeof document === "undefined" || typeof window === "undefined") {
       widgetId = undefined;
       return;
     }
+    delete window.__chidahp_turnstile_onload;
     if (widgetId && window.turnstile) {
       window.turnstile.remove(widgetId);
     }
@@ -267,9 +302,9 @@ export default function BookfeedWaitlistHero() {
   return (
     <section class="relative w-full overflow-hidden bg-[#060606]">
       <div class="pointer-events-none absolute inset-0">
-        <div class="absolute -top-28 left-[-2%] h-80 w-80 rounded-full bg-amber-500/20 blur-3xl animate-pulse" />
-        <div class="absolute top-1/3 right-[-8%] h-96 w-96 rounded-full bg-orange-400/10 blur-3xl animate-pulse [animation-delay:700ms]" />
-        <div class="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-yellow-300/10 blur-3xl animate-pulse [animation-delay:1200ms]" />
+        <div class="absolute -top-28 left-[-2%] h-80 w-80 rounded-full bg-amber-500/18 blur-3xl" />
+        <div class="absolute top-1/3 right-[-8%] h-96 w-96 rounded-full bg-orange-400/10 blur-3xl" />
+        <div class="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-yellow-300/10 blur-3xl" />
         <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:42px_42px]" />
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.22),transparent_50%)]" />
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(245,158,11,0.12),transparent_55%)]" />
@@ -296,7 +331,7 @@ export default function BookfeedWaitlistHero() {
             </div>
           </div>
 
-          <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_60px_-24px_rgba(251,191,36,0.55)] backdrop-blur-xl sm:p-7">
+          <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_60px_-24px_rgba(251,191,36,0.55)] backdrop-blur-md sm:backdrop-blur-xl sm:p-7">
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#FBBF24]">
               Launch Waitlist
             </p>
@@ -330,6 +365,7 @@ export default function BookfeedWaitlistHero() {
                 class="min-h-[70px] w-full overflow-hidden"
                 ref={(el) => {
                   turnstileContainer = el;
+                  if (el) queueBootstrap();
                 }}
               />
               <input type="hidden" name="cf-turnstile-response" value={turnstileToken()} />
