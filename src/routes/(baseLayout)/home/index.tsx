@@ -104,18 +104,27 @@ async function fetchLatestPodcasts() {
 export default function Home() {
   const [shouldLoadDeferred, setShouldLoadDeferred] = createSignal(false);
   const [postsResource] = createResource(shouldLoadDeferred, (ready) => (ready ? fetchPosts() : []));
-  const [latestBooks] = createResource(fetchLatestBooks);
+  // In dev, skip SSR book fetch so the document is not blocked on workers.dev latency.
+  const [booksReady, setBooksReady] = createSignal(!import.meta.env.DEV);
+  const [latestBooks] = createResource(booksReady, (ready) =>
+    ready ? fetchLatestBooks() : Promise.resolve([])
+  );
   const [latestPodcasts] = createResource(shouldLoadDeferred, (ready) =>
     ready ? fetchLatestPodcasts() : []
   );
 
   onMount(() => {
     const activateDeferred = () => setShouldLoadDeferred(true);
+    if (import.meta.env.DEV) {
+      setBooksReady(true);
+      queueMicrotask(activateDeferred);
+      return;
+    }
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(activateDeferred, { timeout: 1200 });
       return;
     }
-    window.setTimeout(activateDeferred, 300);
+    setTimeout(activateDeferred, 300);
   });
 
   const posts = () => postsResource() ?? [];

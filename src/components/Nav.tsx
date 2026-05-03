@@ -21,7 +21,7 @@ export default function Nav() {
         <div class="container mx-auto px-6 lg:px-10 relative z-10">
           <div class="flex items-center justify-between h-[72px]">
             {/* Brand */}
-            <a href="/" class="group flex items-center gap-3.5">
+            <a href="/home" class="group flex items-center gap-3.5">
               <div class="relative">
                 <div class="absolute -inset-1 rounded-full bg-amber-500/40 blur-sm group-hover:bg-amber-500/60 transition-all duration-500" />
                 <img
@@ -70,7 +70,10 @@ export default function Nav() {
       {/* Mobile Top Brand Bar */}
       <div class="lg:hidden relative overflow-hidden bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 shadow-[0_2px_12px_-2px_rgba(180,130,20,0.35)]">
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.25)_0%,_transparent_70%)]" />
-        <div class="relative z-10 flex items-center justify-center h-14 gap-2.5">
+        <a
+          href="/home"
+          class="relative z-10 flex items-center justify-center h-14 gap-2.5 text-inherit no-underline outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2 focus-visible:ring-offset-amber-200 rounded-lg"
+        >
           <div class="relative">
             <div class="absolute -inset-0.5 rounded-full bg-amber-500/40 blur-sm" />
             <img
@@ -84,7 +87,7 @@ export default function Nav() {
           <span class="text-lg font-extrabold text-amber-900 tracking-tight">
             สำนักพิมพ์ชี้ดาบ
           </span>
-        </div>
+        </a>
       </div>
 
       {/* Mobile Bottom Navigation */}

@@ -26,6 +26,12 @@ declare global {
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const TURNSTILE_SCRIPT_ID = "cloudflare-turnstile-script";
+
+function afterNextPaint(fn: () => void) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn);
+  });
+}
 const DEFAULT_WAITLIST_ENDPOINT = "https://api-invitation-bookfeed.chulolab.space/";
 const EMAIL_REGEX = /\S+@\S+\.\S+/;
 
@@ -106,7 +112,7 @@ export default function BookfeedWaitlistHero() {
   };
 
   const renderTurnstileWidget = () => {
-    if (!window.turnstile || !turnstileContainer || widgetId) return;
+    if (typeof document === "undefined" || !window.turnstile || !turnstileContainer || widgetId) return;
     widgetId = window.turnstile.render(turnstileContainer, {
       sitekey: turnstileSiteKey,
       theme: "dark",
@@ -120,17 +126,17 @@ export default function BookfeedWaitlistHero() {
   };
 
   const bootstrapTurnstile = (containerRetry = 0) => {
-    if (!turnstileSiteKey || typeof window === "undefined") return;
+    if (!turnstileSiteKey || typeof document === "undefined" || typeof window === "undefined") return;
 
     if (!turnstileContainer) {
-      if (containerRetry < 12) {
+      if (containerRetry < 90) {
         requestAnimationFrame(() => bootstrapTurnstile(containerRetry + 1));
       }
       return;
     }
 
     if (window.turnstile) {
-      renderTurnstileWidget();
+      afterNextPaint(() => renderTurnstileWidget());
       return;
     }
 
@@ -141,7 +147,7 @@ export default function BookfeedWaitlistHero() {
     if (existingScript) {
       const onExistingScriptReady = () => {
         setTurnstileLoadError("");
-        renderTurnstileWidget();
+        afterNextPaint(() => renderTurnstileWidget());
       };
       existingScriptLoadHandler = onExistingScriptReady;
       existingScript.addEventListener("load", onExistingScriptReady);
@@ -159,10 +165,9 @@ export default function BookfeedWaitlistHero() {
     script.id = TURNSTILE_SCRIPT_ID;
     script.src = TURNSTILE_SCRIPT_SRC;
     script.async = true;
-    script.defer = true;
     script.onload = () => {
       setTurnstileLoadError("");
-      renderTurnstileWidget();
+      afterNextPaint(() => renderTurnstileWidget());
     };
     script.onerror = () => {
       setTurnstileLoadError("Unable to load Turnstile widget.");
@@ -171,12 +176,16 @@ export default function BookfeedWaitlistHero() {
   };
 
   onMount(() => {
-    if (!turnstileSiteKey || typeof window === "undefined") return;
-    // Defer past ref attachment (lazy/Suspense) and past any in-flight script execution.
-    queueMicrotask(() => bootstrapTurnstile());
+    if (!turnstileSiteKey || typeof document === "undefined") return;
+    // Past lazy/Suspense commit + layout so the widget iframe measures correctly.
+    afterNextPaint(() => bootstrapTurnstile());
   });
 
   onCleanup(() => {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      widgetId = undefined;
+      return;
+    }
     if (widgetId && window.turnstile) {
       window.turnstile.remove(widgetId);
     }
@@ -317,7 +326,12 @@ export default function BookfeedWaitlistHero() {
               </div>
             </form>
             <div class="mt-3">
-              <div ref={(el) => (turnstileContainer = el)} />
+              <div
+                class="min-h-[70px] w-full overflow-hidden"
+                ref={(el) => {
+                  turnstileContainer = el;
+                }}
+              />
               <input type="hidden" name="cf-turnstile-response" value={turnstileToken()} />
               {!turnstileSiteKey && (
                 <p class="mt-2 text-xs text-amber-300">

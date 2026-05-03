@@ -4,6 +4,8 @@ import { createHandler, StartServer } from "@solidjs/start/server";
 import Seo from "~/components/SEO";
 import { organizationSchema, websiteSchema } from "~/utils/structuredData";
 
+const isProd = import.meta.env.PROD;
+
 export default createHandler(() => (
   <StartServer
     document={({ assets, children, scripts }) => (
@@ -14,28 +16,36 @@ export default createHandler(() => (
           <meta name="theme-color" content="#7c3aed" />
           {/* Performance & Security Headers */}
           <meta name="referrer" content="strict-origin-when-cross-origin" />
-          
-          {/* Preconnect to external domains for performance */}
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Noto+Sans+Thai:wght@100..900&display=swap"
-          />
-          <link rel="preconnect" href="https://www.googletagmanager.com" />
-          <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+
+          {isProd ? (
+            <>
+              <link rel="preconnect" href="https://fonts.googleapis.com" />
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+              <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Noto+Sans+Thai:wght@100..900&display=swap"
+              />
+              <link rel="preconnect" href="https://www.googletagmanager.com" />
+              <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+            </>
+          ) : (
+            <style>
+              {
+                "body{font-family:system-ui,Segoe UI,Noto Sans Thai,sans-serif}"
+              }
+            </style>
+          )}
           <link rel="preconnect" href="https://www.youtube.com" />
-          <link rel="preconnect" href="https://playground.chidahp.com" crossorigin />
-          <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin />
-          <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin />
-          
+          <link rel="preconnect" href="https://playground.chidahp.com" crossorigin="anonymous" />
+          <link rel="preconnect" href="https://chidahp-book.playground-chidahp.workers.dev" crossorigin="anonymous" />
+          <link rel="preconnect" href="https://chidahp-podcast.playground-chidahp.workers.dev" crossorigin="anonymous" />
+
           {/* SEO Component */}
-          <Seo 
-            structuredData={[organizationSchema, websiteSchema]}
-          />
-          
-          <script>
-            {`(function () {
+          <Seo structuredData={[organizationSchema, websiteSchema]} />
+
+          {isProd ? (
+            <script>
+              {`(function () {
               var run = function () {
                 var ga = document.createElement("script");
                 ga.async = true;
@@ -60,7 +70,8 @@ export default createHandler(() => (
                 window.setTimeout(run, 1200);
               }
             })();`}
-          </script>
+            </script>
+          ) : null}
           
           {/* Favicon and Icons */}
           <link rel="icon" href="/favicon.ico" />

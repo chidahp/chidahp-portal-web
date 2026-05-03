@@ -42,13 +42,42 @@ export default function HomeLayout(props: RouteSectionProps) {
     <div class="flex flex-col min-h-screen">
       {/* Top Nav */}
       <Nav />
-      <Suspense fallback={<div class="h-[260px] sm:h-[320px] md:h-[360px] bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse" />}>
-        {location.pathname === "/timeline" && <TimelineHero />}
-        {/* {location.pathname === "/home" && <HomeResponsiveSlider slides={homeSlides} />} */}
-        {location.pathname === "/home" && <BookfeedWaitlistHero />}
-        {location.pathname === "/podcast" && <ChidahpPodcastHero />}
-        {location.pathname === "/books" && <BookHero />}
-      </Suspense>
+      {location.pathname === "/timeline" && (
+        <Suspense
+          fallback={
+            <div class="min-h-[220px] md:min-h-[260px] bg-gradient-to-r from-yellow-400 via-yellow-500 to-black" />
+          }
+        >
+          <TimelineHero />
+        </Suspense>
+      )}
+      {location.pathname === "/home" && (
+        <Suspense
+          fallback={
+            <div class="min-h-[min(90vh,820px)] w-full bg-[#060606]" aria-hidden="true" />
+          }
+        >
+          <BookfeedWaitlistHero />
+        </Suspense>
+      )}
+      {location.pathname === "/podcast" && (
+        <Suspense
+          fallback={
+            <div class="min-h-[220px] md:min-h-[280px] bg-gradient-to-r from-yellow-400 via-yellow-500 to-black" />
+          }
+        >
+          <ChidahpPodcastHero />
+        </Suspense>
+      )}
+      {location.pathname === "/books" && (
+        <Suspense
+          fallback={
+            <div class="min-h-[200px] md:min-h-[260px] bg-gradient-to-r from-yellow-400 to-orange-400" />
+          }
+        >
+          <BookHero />
+        </Suspense>
+      )}
       {/* Main Content (centered horizontally) */}
       <div
         ref={scrollContainer}
