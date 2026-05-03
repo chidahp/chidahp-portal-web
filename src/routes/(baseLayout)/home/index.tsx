@@ -3,6 +3,7 @@ import Seo from '../../../components/SEO';
 import LatestBookSection from '../../../components/home/LatestBookSection';
 import LatestPodcastSection from '../../../components/home/LatestPodcastSection';
 import HomeBlogSection, { type Post } from "../../../components/home/HomeBlogSection";
+import BookfeedWaitlistAd from "../../../components/home/BookfeedWaitlistAd";
 import { breadcrumbSchema, collectionPageSchema } from '../../../utils/structuredData';
 // Previously these two sections were `lazy()`, which caused their entire
 // area on the page to stay blank while the JS chunk downloaded — and the
@@ -170,6 +171,7 @@ export default function Home() {
       />
       <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div class="max-w-6xl mx-auto">
+          <BookfeedWaitlistAd />
           <LatestBookSection books={latestBooks()} isLoading={isBooksLoading()} />
           <LatestPodcastSection
             videos={latestPodcasts()}
