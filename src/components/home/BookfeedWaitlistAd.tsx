@@ -6,7 +6,7 @@ export interface BookfeedWaitlistAdProps {
 }
 
 export default function BookfeedWaitlistAd(props: BookfeedWaitlistAdProps) {
-  const href = () => "https://bookfeed.chulolab.space";
+  const href = () => "https://bookfeed.chidahp.com";
 
   return (
     <section
