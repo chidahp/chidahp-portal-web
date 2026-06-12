@@ -60,21 +60,21 @@ export default function BookfeedWaitlistAd(props: BookfeedWaitlistAdProps) {
           </div>
 
           <div class="min-w-0 space-y-2">
-            <p class="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-400/90 sm:text-[11px]">
-              bookfeed · early access
+            <p class="text-[10px] font-semibold uppercase  text-amber-400/90 sm:text-[11px]">
+              bookfeed
             </p>
             <p
               id="bookfeed-waitlist-ad-heading"
               class="text-lg font-bold leading-snug tracking-tight text-white sm:text-xl md:text-2xl md:leading-tight"
             >
-              Register Waitlist to{" "}
+              Register{" "}
               <span class="bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 bg-clip-text text-transparent">
                 Bookfeed
               </span>{" "}
               Social Media
             </p>
             <p class="max-w-xl text-sm leading-relaxed text-neutral-400 sm:text-[0.9375rem]">
-              แพลตฟอร์มโซเชียลด้านหนังสือจากชี้ดาบ — ลงทะเบียนรอเข้าใช้งานที่นี่
+              BookFeed คือแพลตฟอร์มโซเชียลสำหรับนักอ่าน ที่ช่วยให้ผู้คนค้นพบหนังสือ แบ่งปันประสบการณ์การอ่าน และเชื่อมต่อกับคนที่รักหนังสือเหมือนกัน
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function BookfeedWaitlistAd(props: BookfeedWaitlistAdProps) {
             href={href()}
             class="group/btn relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-b from-[#FCD34D] to-[#F59E0B] px-6 py-3.5 text-center text-sm font-bold text-neutral-900 shadow-[0_2px_0_0_rgba(180,83,9,0.35),0_12px_28px_-6px_rgba(245,158,11,0.55)] ring-1 ring-amber-200/50 transition-[transform,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_rgba(180,83,9,0.4),0_16px_36px_-6px_rgba(245,158,11,0.65)] hover:brightness-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 active:translate-y-0 active:shadow-[0_1px_0_0_rgba(180,83,9,0.45),0_8px_20px_-6px_rgba(245,158,11,0.45)] motion-reduce:hover:translate-y-0 motion-reduce:active:translate-y-0 sm:w-auto sm:min-w-[11rem] sm:px-7"
           >
-            <span class="relative z-[1]">ลงทะเบียน Waitlist</span>
+            <span class="relative z-[1]">เข้าใช้งาน</span>
             <svg
               class="relative z-[1] h-4 w-4 shrink-0 opacity-90 transition-transform duration-300 group-hover/btn:translate-x-0.5 motion-reduce:transition-none"
               viewBox="0 0 20 20"
